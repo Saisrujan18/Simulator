@@ -1,4 +1,4 @@
-.data             
+.data
 array:
     .word 2
 .text
