@@ -4,5 +4,5 @@ array:
 .text
 .globl main
 main:
-    addi $t0,$t0,3
+    add $t0,$t0,$t1
     jr $ra
