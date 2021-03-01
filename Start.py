@@ -129,12 +129,29 @@ class bne:
             return Loops[self.instruction[-1]]
         return self.indexPosition+1
 
+class j:
+    instruction=[]
+    def __init__(self,ins):
+        self.instruction=ins
+    def check(self):
+        if len(self.instruction)==2: 
+            ok = True
+            if self.instruction[-1] not in Loops.keys() :
+                ok=False
+            if ok:
+                return self.update()
+        sys.exit()
+    
+    def update(self):
+        return Loops[self.instruction[-1]]
+
 class control:
     adder=add([])
     subber=sub([])
     addier=addi([])
     beqer=beq([],0)
     bneer=bne([],0)
+    jer=j([])
     index=0
     def __init__(self,instruction,i):
         self.current=instruction
@@ -160,6 +177,9 @@ class control:
         elif operation=="bne":
             self.bneer.__init__(self.current,self.index)
             return self.bneer.check()
+        elif operation=='j':
+            self.jer.__init__(self.current)
+            return self.jer.check()
         else:
             sys.exit()
 
@@ -185,7 +205,6 @@ while i<len(Instructions):
     if Instructions[i][0] in jumpRelated:
         direct.__init__(Instructions[i],i)
         i=direct.makeWay()
-        print("ef")
     elif len(Instructions[i])==1:
         i+=1
     elif Instructions[i][-1]=="$ra" and Instructions[i][0]=="jr":
