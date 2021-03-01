@@ -1,9 +1,10 @@
 .data
 array:
     .word 2
-.text
-.globl main
-main:
+.text ; eieufwu
+.globl main  ; uuu
+; ewfw
+main:   
     add $t0,$t0,$t1
     addi $t4,$zero,1
     addi $t2,$zero,2
@@ -13,4 +14,7 @@ exit:
     sub $t2,$t2,$t4
     addi $t0,$t0,1000
     bne $t2,$zero,exit
+    j theend
+    addi $t0,$t0,1000
+theend :
     jr $ra

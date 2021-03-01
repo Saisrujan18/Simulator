@@ -9,7 +9,11 @@ Loops={}
 
 jumpRelated=["j","beq","bne"]
 
-Memory=[]
+Memory=[0 for i in range(1024)]
+
+Data={}
+
+DataPointer=0
 
 def checkRegister(R):
     return True if R in Registers.keys() else False
@@ -186,16 +190,40 @@ class control:
 with open("Addition.asm") as f:
     Instructions= f.readlines()
 for i in range(len(Instructions)):
-    Instructions[i]=re.split(" |,|\n",Instructions[i])
+    Instructions[i]=re.split(" |,|:|\n",Instructions[i])
     while "" in Instructions[i]:
         Instructions[i].remove('')
-InstructionsStartFrom=0
+
 for i in range(len(Instructions)):
-    if Instructions[i][0]=="main:":
+    for j in range(len(Instructions[i])):
+        if Instructions[i][j].find(";")!=-1 :
+            temp=Instructions[i]
+            temp=temp[:j]
+            Instructions[i]=temp
+            break
+
+while [] in Instructions:
+    Instructions.remove([])
+
+
+
+
+# for i in range(len(Instructions)):
+#     if i==0:
+#         if Instructions[i][0]==".data":
+#             continue
+#         else:
+#             sys.exit()
+
+
+InstructionsStartFrom=0
+
+for i in range(len(Instructions)):
+    if Instructions[i][0]=="main":
         InstructionsStartFrom=i+1
         for j in range(InstructionsStartFrom,len(Instructions)):
             if len(Instructions[j])==1:
-                Loops.update({Instructions[j][0][:-1]:j})
+                Loops.update({Instructions[j][0]:j})
         break
 
 direct=control([],0)
