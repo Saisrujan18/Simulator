@@ -201,7 +201,11 @@ for i in range(len(Instructions)):
             temp=temp[:j]
             Instructions[i]=temp
             break
-
+        if Instruction[i][j].find("#")!=-1 :
+            temp = Instructions[i]
+            temp = temp[:j]
+            Instructions[i] = temp
+            break
 while [] in Instructions:
     Instructions.remove([])
 
