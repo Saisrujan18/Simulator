@@ -1,8 +1,19 @@
-.data
-array:
-    .word 2
+.data 
+array: 
+    .asciiz "asdfasdf"
 .text
 .globl main
 main:
-    addi $t0,$t0,3
+    add $t0,$t0,$t1
+    addi $t4,$zero,1
+    addi $t2,$zero,2
+    add $t0,$t0,$t1
+exit:
+    add $t0,$t0,$t1
+    sub $t2,$t2,$t4
+    addi $t0,$t0,1000
+    bne $t2,$zero,exit
+    j end
+
+end:
     jr $ra
