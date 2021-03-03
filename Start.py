@@ -17,7 +17,16 @@ Memory=[0 for i in range(1024)]
 
 Data={}
 
-DataPointer=0
+MemoryIndex=0
+
+def AddToMemory(ins):
+    global MemoryIndex
+    if ins[1]!=".word":
+        sys.exit()
+    Data.update({ins[0]:MemoryIndex})
+    for i in range(2,len(ins)):
+        Memory[MemoryIndex]=int(ins[i])
+        MemoryIndex+=1
 
 def checkRegister(R):
     return True if R in Registers.keys() else False
@@ -302,16 +311,10 @@ while i<n:
     n=len(Instructions)
     i+=1
 
-whereistext=len(Instructions)
 
-for i in range(len(Instructions)):
-    if Instructions[i]==[".text"]:
-        whereistext=i
-        break
 
 if [".data"] in Instructions:
     i=1
-    n=whereistext
     while Instructions[i]!=['.text']:
         if len(Instructions[i])==1:
             for j in range(len(Instructions[i+1])):
@@ -319,8 +322,17 @@ if [".data"] in Instructions:
             m=Instructions.pop(i+1)
         i+=1
 
-# <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
+whereistext=len(Instructions)
 
+for i in range(len(Instructions)):
+    if Instructions[i]==[".text"]:
+        whereistext=i
+        break
+
+for i in range(1,whereistext):
+    AddToMemory(Instructions[i])
+    
+# <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
 InstructionsStartFrom=len(Instructions)
 
 for i in range(len(Instructions)):
@@ -351,3 +363,4 @@ print(Instructions)
 print(Registers)
 print(Memory)
 print(Loops)
+print(Data)
