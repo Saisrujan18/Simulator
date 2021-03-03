@@ -1,9 +1,10 @@
 import re
 import sys
+import copy
 
 Instructions=[]
 
-operations=['add','addi','sub','bne','beq','j',"lw","sw","la","jal","jr"]
+operations=['add','addi','sub','bne','beq','j',"lw","sw","la","jal","jr","slt"]
 
 Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0}
 
@@ -34,7 +35,7 @@ def checkRegister(R):
 class add:
     instruction=[]
     def __init__(self,ins):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
     
     def check(self):
         
@@ -53,7 +54,7 @@ class add:
 class sub:
     instruction=[]
     def __init__(self,ins):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
 
     def check(self):
         
@@ -72,7 +73,7 @@ class sub:
 class addi:
     instruction=[]
     def __init__(self,ins):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
 
     def check(self):
         
@@ -103,7 +104,7 @@ class beq:
     instruction=[]
     indexPosition=0
     def __init__(self,ins,ind):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
         self.indexPosition=ind
     def check(self):
         if len(self.instruction)== 4: 
@@ -125,7 +126,7 @@ class bne:
     instruction=[]
     indexPosition=0
     def __init__(self,ins,ind):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
         self.indexPosition=ind
     def check(self):
         if len(self.instruction)== 4: 
@@ -144,10 +145,32 @@ class bne:
             return Loops[self.instruction[-1]]
         return self.indexPosition+1
 
+class slt:
+    instruction=[]
+    def __init__(self,ins):
+        self.instruction=copy.deepcopy(ins)
+    
+    def check(self):
+        
+        if len(self.instruction)== 4: 
+            ok = True
+            for i in range(1,4):
+                ok = ok and checkRegister(self.instruction[i])
+            if ok:
+                self.update()
+                return
+        sys.exit()
+    
+    def update(self):
+        if Registers[self.instruction[2]]<Registers[self.instruction[-1]]:
+            Registers[self.instruction[1]]=1
+            return
+        Registers[self.instruction[1]]=0
+
 class j:
     instruction=[]
     def __init__(self,ins):
-        self.instruction=ins
+        self.instruction=copy.deepcopy(ins)
     def check(self):
         if len(self.instruction)==2: 
             ok = True
@@ -163,7 +186,7 @@ class j:
 class lw:
     instructions=[]
     def __init__(self,ins):
-        self.instructions=ins
+        self.instructions=copy.deepcopy(ins)
     def check(self):
         if checkRegister(self.instructions[1])==False:
             sys.exit()
@@ -173,17 +196,20 @@ class lw:
         whereisdollar=self.instructions[-1].find('$')
         for i in range(0,whereisdollar):
             offset+=self.instructions[-1][i]
+        # print(offset)
         offset=int(offset)
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Registers[self.instructions[1]]=Memory[offset//4+Registers[self.instructions[-1]]]
+        # multiples of 4 
 
 class sw:
     instructions=[]
     def __init__(self,ins):
-        self.instructions=ins
+        self.instructions=copy.deepcopy(ins)
     def check(self):
+        # print(self.instructions)
         if checkRegister(self.instructions[1])==False:
             sys.exit()
         self.instructions[-1]=self.instructions[-1].replace("(","")
@@ -192,11 +218,15 @@ class sw:
         whereisdollar=self.instructions[-1].find('$')
         for i in range(0,whereisdollar):
             offset+=self.instructions[-1][i]
+        # print(offset)
         offset=int(offset)
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Memory[offset//4+Registers[self.instructions[-1]]]=Registers[self.instructions[1]]
+
+# class la:
+    
 
 class control:
     adder=add([])
@@ -207,6 +237,7 @@ class control:
     jer=j([])
     lwer=lw([])
     swer=sw([])
+    slter=slt([])
     index=0
     def __init__(self,instruction,i):
         self.current=instruction
@@ -241,6 +272,9 @@ class control:
         elif operation=="sw":
             self.swer.__init__(self.current)
             self.swer.check()
+        elif operation=="slt":
+            self.slter.__init__(self.current)
+            self.slter.check()
         else:
             sys.exit()
 
@@ -344,7 +378,6 @@ for i in range(len(Instructions)):
         break
 
 direct=control([],0)
-
 i=InstructionsStartFrom
 while i<len(Instructions):
     if Instructions[i][0] in jumpRelated:
@@ -358,6 +391,7 @@ while i<len(Instructions):
         direct.__init__(Instructions[i],i)
         direct.makeWay()
         i+=1
+
 
 print(Instructions)
 print(Registers)
