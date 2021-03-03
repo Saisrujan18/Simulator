@@ -202,16 +202,6 @@ for i in range(len(Instructions)):
     while "" in Instructions[i]:
         Instructions[i].remove('')
 
-if [".text"]  in Instructions:
-    temp1=Instructions.index([".text"])
-    if Instructions[temp1+1]==[".globl","main"]:
-        print("",end="")
-    else:    
-        sys.exit()
-else:
-    sys.exit()
-
-
 #   Removing comments from the file 
 
 for i in range(len(Instructions)):
@@ -231,6 +221,17 @@ for i in range(len(Instructions)):
 #   Removing empty lines
 while [] in Instructions:
     Instructions.remove([])
+
+
+if [".text"]  in Instructions:
+    temp1=Instructions.index([".text"])
+    if Instructions[temp1+1]==[".globl","main"]:
+        print("",end="")
+    else:    
+        sys.exit()
+else:
+    sys.exit()
+
 
 
 if ['.text'] not in Instructions or [".globl","main"] not in Instructions:
@@ -279,7 +280,7 @@ InstructionsStartFrom=len(Instructions)
 
 for i in range(len(Instructions)):
     if Instructions[i][0]=="main":
-        InstructionsStartFrom=i+1
+        InstructionsStartFrom=i
         for j in range(InstructionsStartFrom,len(Instructions)):
             if len(Instructions[j])==1:
                 Loops.update({Instructions[j][0]:j})
