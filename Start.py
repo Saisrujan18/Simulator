@@ -3,11 +3,15 @@ import sys
 
 Instructions=[]
 
+operations=['add','addi','sub','bne','beq','j',"lw","sw","la"]
+
 Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0}
 
 Loops={}
 
 jumpRelated=["j","beq","bne"]
+
+MemoryRelated=["lw","sw"]
 
 Memory=[0 for i in range(1024)]
 
@@ -17,7 +21,6 @@ DataPointer=0
 
 def checkRegister(R):
     return True if R in Registers.keys() else False
-
 
 class add:
     instruction=[]
@@ -70,7 +73,6 @@ class addi:
                 if i<3 :
                     ok = ok and checkRegister(self.instruction[i])
                 else:
-                    # ok =ok  and not checkRegister(self.Instruction[-1])
                     temp=True
                     if checkRegister(self.instruction[-1])==True:
                         ok=False
@@ -156,6 +158,7 @@ class control:
     beqer=beq([],0)
     bneer=bne([],0)
     jer=j([])
+    # lwer=lw([])
     index=0
     def __init__(self,instruction,i):
         self.current=instruction
@@ -187,12 +190,29 @@ class control:
         else:
             sys.exit()
 
+# >>>>>>> MANIPULAING INSTRUCTIONS START
+
+#   Fetching all the lines from the file
 with open("Addition.asm") as f:
     Instructions= f.readlines()
+
+#   spliting eachline accordingly
 for i in range(len(Instructions)):
     Instructions[i]=re.split(" |,|:|\n",Instructions[i])
     while "" in Instructions[i]:
         Instructions[i].remove('')
+
+if [".text"]  in Instructions:
+    temp1=Instructions.index([".text"])
+    if Instructions[temp1+1]==[".globl","main"]:
+        print("",end="")
+    else:    
+        sys.exit()
+else:
+    sys.exit()
+
+
+#   Removing comments from the file 
 
 for i in range(len(Instructions)):
     for j in range(len(Instructions[i])):
@@ -201,26 +221,61 @@ for i in range(len(Instructions)):
             temp=temp[:j]
             Instructions[i]=temp
             break
-        if Instruction[i][j].find("#")!=-1 :
-            temp = Instructions[i]
-            temp = temp[:j]
-            Instructions[i] = temp
+        if Instructions[i][j].find("#")!=-1 :
+            temp=Instructions[i]
+            temp=temp[:j]
+            Instructions[i]=temp
             break
+
+
+#   Removing empty lines
 while [] in Instructions:
     Instructions.remove([])
 
 
+if ['.text'] not in Instructions or [".globl","main"] not in Instructions:
+    sys.exit()
 
+# seperating loops with instructions which are in sameline
 
-# for i in range(len(Instructions)):
-#     if i==0:
-#         if Instructions[i][0]==".data":
-#             continue
-#         else:
-#             sys.exit()
+whereisgloblmain=len(Instructions)
+for i in range(len(Instructions)):
+    if Instructions[i]==[".globl","main"]:
+        whereisgloblmain=i
+        break
 
+i=whereisgloblmain
+n=len(Instructions)
+while i<n:
+    if Instructions[i][0] not in operations and len(Instructions[i])>2:
+        Loops.update({Instructions[i][0]:i})
+        temp=[Instructions[i][0]]
+        temp2=Instructions[i][1:]
+        Instructions[i]=temp
+        Instructions.insert(i+1,temp2)
+    n=len(Instructions)
+    i+=1
 
-InstructionsStartFrom=0
+whereistext=len(Instructions)
+
+for i in range(len(Instructions)):
+    if Instructions[i]==[".text"]:
+        whereistext=i
+        break
+
+if [".data"] in Instructions:
+    i=1
+    n=whereistext
+    while Instructions[i]!=['.text']:
+        if len(Instructions[i])==1:
+            for j in range(len(Instructions[i+1])):
+                Instructions[i].append(Instructions[i+1][j])
+            m=Instructions.pop(i+1)
+        i+=1
+
+# <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
+
+InstructionsStartFrom=len(Instructions)
 
 for i in range(len(Instructions)):
     if Instructions[i][0]=="main":
