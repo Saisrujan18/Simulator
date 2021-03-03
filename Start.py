@@ -3,7 +3,7 @@ import sys
 
 Instructions=[]
 
-operations=['add','addi','sub','bne','beq','j',"lw","sw","la"]
+operations=['add','addi','sub','bne','beq','j',"lw","sw","la","jal","jr"]
 
 Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0}
 
@@ -151,6 +151,44 @@ class j:
     def update(self):
         return Loops[self.instruction[-1]]
 
+class lw:
+    instructions=[]
+    def __init__(self,ins):
+        self.instructions=ins
+    def check(self):
+        if checkRegister(self.instructions[1])==False:
+            sys.exit()
+        self.instructions[-1]=self.instructions[-1].replace("(","")
+        self.instructions[-1]=self.instructions[-1].replace(")","")
+        offset=""
+        whereisdollar=self.instructions[-1].find('$')
+        for i in range(0,whereisdollar):
+            offset+=self.instructions[-1][i]
+        offset=int(offset)
+        self.instructions[-1]=self.instructions[-1][whereisdollar:]
+        if checkRegister(self.instructions[-1])==False:
+            sys.exit()
+        Registers[self.instructions[1]]=Memory[offset//4+Registers[self.instructions[-1]]]
+
+class sw:
+    instructions=[]
+    def __init__(self,ins):
+        self.instructions=ins
+    def check(self):
+        if checkRegister(self.instructions[1])==False:
+            sys.exit()
+        self.instructions[-1]=self.instructions[-1].replace("(","")
+        self.instructions[-1]=self.instructions[-1].replace(")","")
+        offset=""
+        whereisdollar=self.instructions[-1].find('$')
+        for i in range(0,whereisdollar):
+            offset+=self.instructions[-1][i]
+        offset=int(offset)
+        self.instructions[-1]=self.instructions[-1][whereisdollar:]
+        if checkRegister(self.instructions[-1])==False:
+            sys.exit()
+        Memory[offset//4+Registers[self.instructions[-1]]]=Registers[self.instructions[1]]
+
 class control:
     adder=add([])
     subber=sub([])
@@ -158,7 +196,8 @@ class control:
     beqer=beq([],0)
     bneer=bne([],0)
     jer=j([])
-    # lwer=lw([])
+    lwer=lw([])
+    swer=sw([])
     index=0
     def __init__(self,instruction,i):
         self.current=instruction
@@ -187,6 +226,12 @@ class control:
         elif operation=='j':
             self.jer.__init__(self.current)
             return self.jer.check()
+        elif operation=="lw":
+            self.lwer.__init__(self.current)
+            self.lwer.check()
+        elif operation=="sw":
+            self.swer.__init__(self.current)
+            self.swer.check()
         else:
             sys.exit()
 

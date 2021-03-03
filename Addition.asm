@@ -14,6 +14,7 @@ exit:
     sub $t2,$t2,$t4
     addi $t0,$t0,1000
     bne $t2,$zero,exit
+    lw $t7,8($t6)
     j theend
     addi $t0,$t0,1000
 theend :
