@@ -201,7 +201,7 @@ class lw:
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Registers[self.instructions[1]]=Memory[offset//4+Registers[self.instructions[-1]]]
+        Registers[self.instructions[1]]=Memory[offset//4+Registers[self.instructions[-1]]//4]
         # multiples of 4 
 
 class sw:
@@ -223,7 +223,7 @@ class sw:
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Memory[offset//4+Registers[self.instructions[-1]]]=Registers[self.instructions[1]]
+        Memory[offset//4+Registers[self.instructions[-1]]//4]=Registers[self.instructions[1]]
 
 # class la:
     
@@ -243,6 +243,8 @@ class control:
         self.current=instruction
         self.index=i
     def makeWay(self):
+        # print(Instructions[i])
+        # print(Registers['$t2'],Registers['$t3'],Registers['$t1'],Registers['$t5'],Registers['$t6'],Registers['$s0'],Memory[0],Memory[1],Memory[2])
         if len(self.current)==0 :
             sys.exit()
         operation=self.current[0]
@@ -378,6 +380,9 @@ for i in range(len(Instructions)):
         break
 
 direct=control([],0)
+# print(Instructions)
+# print(Memory)
+# print(Loops)
 i=InstructionsStartFrom
 while i<len(Instructions):
     if Instructions[i][0] in jumpRelated:
@@ -394,7 +399,7 @@ while i<len(Instructions):
 
 
 print(Instructions)
-print(Registers)
+# print(Registers)
 print(Memory)
-print(Loops)
-print(Data)
+# print(Loops)
+# print(Data)
