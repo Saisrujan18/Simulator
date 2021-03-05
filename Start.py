@@ -10,15 +10,20 @@ Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0"
 
 Loops={}
 
-jumpRelated=["j","beq","bne","jal"]
+jumpRelated=["j","beq","bne","jal","jr"]
 
-MemoryRelated=["lw","sw"]
+MemoryRelated=["lw","sw","la"]
 
 Memory=[0 for i in range(1024)]
 
 Data={}
 
 MemoryIndex=0
+
+Stackpointer=1023
+
+def UpdateReturnAddress():
+    Registers["$ra"]=len(Instructions)
 
 def AddToMemory(ins):
     global MemoryIndex
@@ -209,7 +214,6 @@ class sw:
     def __init__(self,ins):
         self.instructions=copy.deepcopy(ins)
     def check(self):
-        # print(self.instructions)
         if checkRegister(self.instructions[1])==False:
             sys.exit()
         self.instructions[-1]=self.instructions[-1].replace("(","")
@@ -218,18 +222,15 @@ class sw:
         whereisdollar=self.instructions[-1].find('$')
         for i in range(0,whereisdollar):
             offset+=self.instructions[-1][i]
-        # print(offset)
         offset=int(offset)
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Memory[offset//4+Registers[self.instructions[-1]]//4]=Registers[self.instructions[1]]
 
-# class la:
-# jr $t0
 class jal:
     instruction=[]
-    indexPosition = -1;
+    indexPosition = -1
     def __init__(self,ins,ind):
         self.instruction=copy.deepcopy(ins)
         self.indexPosition = ind
@@ -246,8 +247,35 @@ class jal:
         Registers['$ra'] = self.indexPosition+1
         return Loops[self.instruction[-1]]
 
+class jr:
+    instruction=[]
+    def __init__(self,ins):
+        self.instruction=copy.deepcopy(ins)
+    def check(self):
+        if len(self.instruction)==2: 
+            ok = True
+            ok = ok and checkRegister(self.instruction[-1])
+            if ok:
+                return self.update()
+        sys.exit()
+    
+    def update(self):
+        return Registers[self.instruction[-1]]
 
-
+class la:
+    instructions=[]
+    def __init__(self,ins):
+        self.instructions=copy.deepcopy(ins)
+    
+    def check(self):
+        if checkRegister(self.instructions[1])==False:
+            sys.exit()
+        if self.instructions[-1] not in Data.keys():
+            sys.exit()
+        self.update()
+    
+    def update(self):
+        Registers[self.instructions[1]]=Data[self.instructions[-1]]
 
 class control:
     adder=add([])
@@ -259,6 +287,9 @@ class control:
     lwer=lw([])
     swer=sw([])
     slter=slt([])
+    jaler=jal([],0)
+    jrer=jr([])
+    laer=la([])
     index=0
     def __init__(self,instruction,i):
         self.current=instruction
@@ -298,6 +329,15 @@ class control:
         elif operation=="slt":
             self.slter.__init__(self.current)
             self.slter.check()
+        elif operation=="jal":
+            self.jaler.__init__(self.current,self.index)
+            return self.jaler.check()
+        elif operation=="jr":
+            self.jrer.__init__(self.current)
+            return self.jrer.check()
+        elif operation=="la":
+            self.laer.__init__(self.current)
+            self.laer.check()
         else:
             sys.exit()
 
@@ -406,10 +446,8 @@ for i in range(len(Instructions)):
                 Loops.update({Instructions[j][0]:j})
         break
 
+UpdateReturnAddress()
 direct=control([],0)
-# print(Instructions)
-# print(Memory)
-# print(Loops)
 i=InstructionsStartFrom
 while i<len(Instructions):
     if Instructions[i][0] in jumpRelated:
@@ -417,8 +455,6 @@ while i<len(Instructions):
         i=direct.makeWay()
     elif len(Instructions[i])==1:
         i+=1
-    elif Instructions[i][-1]=="$ra" and Instructions[i][0]=="jr":
-        break
     else:
         direct.__init__(Instructions[i],i)
         direct.makeWay()
