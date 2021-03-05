@@ -10,7 +10,7 @@ Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0"
 
 Loops={}
 
-jumpRelated=["j","beq","bne"]
+jumpRelated=["j","beq","bne","jal"]
 
 MemoryRelated=["lw","sw"]
 
@@ -226,7 +226,28 @@ class sw:
         Memory[offset//4+Registers[self.instructions[-1]]//4]=Registers[self.instructions[1]]
 
 # class la:
+# jr $t0
+class jal:
+    instruction=[]
+    indexPosition = -1;
+    def __init__(self,ins,ind):
+        self.instruction=copy.deepcopy(ins)
+        self.indexPosition = ind
+    def check(self):
+        if len(self.instruction)==2: 
+            ok = True
+            if self.instruction[-1] not in Loops.keys() :
+                ok=False
+            if ok:
+                return self.update()
+        sys.exit()
     
+    def update(self):
+        Registers['$ra'] = self.indexPosition+1
+        return Loops[self.instruction[-1]]
+
+
+
 
 class control:
     adder=add([])
@@ -398,7 +419,7 @@ while i<len(Instructions):
         i+=1
 
 
-print(Instructions)
+# print(Instructions)
 # print(Registers)
 print(Memory)
 # print(Loops)
