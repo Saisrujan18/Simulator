@@ -333,6 +333,10 @@ for i in range(len(Instructions)):
 while [] in Instructions:
     Instructions.remove([])
 
+for i in range(len(Instructions)):
+    for j in range(len(Instructions[i])):
+        while "\t" in Instructions[i][j]:
+            Instructions[i][j]=Instructions[i][j].replace("\t","")
 
 if [".text"]  in Instructions:
     temp1=Instructions.index([".text"])
@@ -388,6 +392,8 @@ for i in range(len(Instructions)):
 
 for i in range(1,whereistext):
     AddToMemory(Instructions[i])
+
+
     
 # <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
 InstructionsStartFrom=len(Instructions)
@@ -419,8 +425,8 @@ while i<len(Instructions):
         i+=1
 
 
-# print(Instructions)
-# print(Registers)
+print(Instructions)
+print(Registers)
 print(Memory)
-# print(Loops)
-# print(Data)
+print(Loops)
+print(Data)

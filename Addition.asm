@@ -19,7 +19,7 @@ slt $v0,$t6,$t5 #if a[j+1] < a[j]
 bne $v0,$zero,swap
 addi $t3,$t3,4
 addi $s0,$s0,4
-j loop2
+j loop2                     
 swap:
 sw $t5,4($s0)
 sw $t6,0($s0)
