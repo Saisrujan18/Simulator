@@ -1,6 +1,10 @@
+# IMPORTING ALL THE LIBRARIES
+
 import re
 import sys
 import copy
+
+# ELEPHANT IN THE ROOM
 
 Instructions=[]
 
@@ -14,13 +18,15 @@ jumpRelated=["j","beq","bne","jal","jr"]
 
 MemoryRelated=["lw","sw","la"]
 
-Memory=[0 for i in range(1024)]
+Memory={268435456+4*i:0 for i in range(1024)}
 
 Data={}
 
-MemoryIndex=0
+MemoryIndex=268435456
 
-Stackpointer=1023
+Stackpointer=1023*4+268435456
+
+# 268435456 = 0x10000000
 
 def UpdateReturnAddress():
     Registers["$ra"]=len(Instructions)
@@ -32,7 +38,7 @@ def AddToMemory(ins):
     Data.update({ins[0]:MemoryIndex})
     for i in range(2,len(ins)):
         Memory[MemoryIndex]=int(ins[i])
-        MemoryIndex+=1
+        MemoryIndex+=4
 
 def checkRegister(R):
     return True if R in Registers.keys() else False
@@ -43,8 +49,7 @@ class add:
         self.instruction=copy.deepcopy(ins)
     
     def check(self):
-        
-        if len(self.instruction)== 4: 
+        if len(self.instruction)==4: 
             ok = True
             for i in range(1,4):
                 ok = ok and checkRegister(self.instruction[i])
@@ -61,8 +66,7 @@ class sub:
     def __init__(self,ins):
         self.instruction=copy.deepcopy(ins)
 
-    def check(self):
-        
+    def check(self):        
         if len(self.instruction)== 4: 
             ok = True
             for i in range(1,4):
@@ -81,7 +85,6 @@ class addi:
         self.instruction=copy.deepcopy(ins)
 
     def check(self):
-        
         if len(self.instruction)== 4: 
             ok = True
             for i in range(1,4):
@@ -201,13 +204,11 @@ class lw:
         whereisdollar=self.instructions[-1].find('$')
         for i in range(0,whereisdollar):
             offset+=self.instructions[-1][i]
-        # print(offset)
         offset=int(offset)
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Registers[self.instructions[1]]=Memory[offset//4+Registers[self.instructions[-1]]//4]
-        # multiples of 4 
+        Registers[self.instructions[1]]=Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]
 
 class sw:
     instructions=[]
@@ -226,7 +227,7 @@ class sw:
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Memory[offset//4+Registers[self.instructions[-1]]//4]=Registers[self.instructions[1]]
+        Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]=Registers[self.instructions[1]]
 
 class jal:
     instruction=[]
@@ -295,8 +296,6 @@ class control:
         self.current=instruction
         self.index=i
     def makeWay(self):
-        # print(Instructions[i])
-        # print(Registers['$t2'],Registers['$t3'],Registers['$t1'],Registers['$t5'],Registers['$t6'],Registers['$s0'],Memory[0],Memory[1],Memory[2])
         if len(self.current)==0 :
             sys.exit()
         operation=self.current[0]
@@ -434,8 +433,8 @@ for i in range(1,whereistext):
     AddToMemory(Instructions[i])
 
 
-    
 # <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
+
 InstructionsStartFrom=len(Instructions)
 
 for i in range(len(Instructions)):
@@ -461,8 +460,15 @@ while i<len(Instructions):
         i+=1
 
 
-print(Instructions)
+# print(Instructions)
 print(Registers)
-print(Memory)
-print(Loops)
-print(Data)
+for i in Memory:
+    if i <MemoryIndex:
+        print(i,end=" : ")
+        print(Memory[i])
+    else:
+        break
+# print(Memory)
+# print(Loops)
+# print(Data)
+# print(MemoryIndex)
