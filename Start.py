@@ -28,8 +28,12 @@ Stackpointer=1023*4+268435456
 
 # 268435456 = 0x10000000
 
+# FEW HELPFULL FUNCTIONS 
+
 def UpdateReturnAddress():
+    global Stackpointer
     Registers["$ra"]=len(Instructions)
+    Registers["$sp"]=Stackpointer
 
 def AddToMemory(ins):
     global MemoryIndex
@@ -42,6 +46,8 @@ def AddToMemory(ins):
 
 def checkRegister(R):
     return True if R in Registers.keys() else False
+
+# CLASSES FOR EACH INSTRUCTION
 
 class add:
     instruction=[]
@@ -278,6 +284,8 @@ class la:
     def update(self):
         Registers[self.instructions[1]]=Data[self.instructions[-1]]
 
+# MAIN CLASS WHERE EVERY INSTRUCTION IS SENT TO EXECUTE
+
 class control:
     adder=add([])
     subber=sub([])
@@ -342,17 +350,19 @@ class control:
 
 # >>>>>>> MANIPULAING INSTRUCTIONS START
 
-#   Fetching all the lines from the file
+#   FETCHING ALL LINES FROM ADDITION.ASM
+
 with open("Addition.asm") as f:
     Instructions= f.readlines()
 
-#   spliting eachline accordingly
+#   SPLITING EACHLINE ACCORDINGLY
+
 for i in range(len(Instructions)):
     Instructions[i]=re.split(" |,|:|\n",Instructions[i])
     while "" in Instructions[i]:
         Instructions[i].remove('')
-
-#   Removing comments from the file 
+ 
+#   REMOVING COMMENTS FROM THE FILE 
 
 for i in range(len(Instructions)):
     for j in range(len(Instructions[i])):
@@ -368,9 +378,12 @@ for i in range(len(Instructions)):
             break
 
 
-#   Removing empty lines
+#   REMOVING EMPTY LINES
+
 while [] in Instructions:
     Instructions.remove([])
+
+# REMOVING TABS
 
 for i in range(len(Instructions)):
     for j in range(len(Instructions[i])):
@@ -445,6 +458,8 @@ for i in range(len(Instructions)):
                 Loops.update({Instructions[j][0]:j})
         break
 
+#   HEART OF THE SIMULATOR
+
 UpdateReturnAddress()
 direct=control([],0)
 i=InstructionsStartFrom
@@ -459,6 +474,7 @@ while i<len(Instructions):
         direct.makeWay()
         i+=1
 
+#   RESULTS OF THE SIMULATOR
 
 # print(Instructions)
 print(Registers)
