@@ -3,6 +3,7 @@
 import re
 import sys
 import copy
+from blessed import Terminal
 
 # ELEPHANT IN THE ROOM
 
@@ -26,9 +27,42 @@ MemoryIndex=268435456
 
 Stackpointer=1023*4+268435456
 
+term = Terminal()
+
+y_pos=0
+
 # 268435456 = 0x10000000
 
 # FEW HELPFULL FUNCTIONS 
+
+def print_registers():
+    global y_pos
+    print(term.move_xy(term.width//2 - 5,2) + "REGISTERS")
+    y_pos = 4
+    x_pos = 0
+    for i in Registers:
+        pri = f' {i} : {Registers[i]} '
+        if x_pos+len(pri)+2 > term.width:
+            x_pos = 0
+            y_pos += 2
+        print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
+        x_pos += len(pri)+2
+
+def print_memory():
+    global y_pos
+    x_pos = 0
+    y_pos += 2
+    print(term.move_xy(term.width//2 -3,y_pos) + "MEMORY")
+    y_pos+=2
+    for i in Memory:
+        pri = f' {i} : {Memory[i]} '
+        if x_pos+len(pri)+2 > term.width:
+            x_pos = 0
+            y_pos += 2
+        if i > MemoryIndex:
+            break
+        print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
+        x_pos += len(pri)+2
 
 def UpdateReturnAddress():
     global Stackpointer
@@ -463,28 +497,42 @@ for i in range(len(Instructions)):
 UpdateReturnAddress()
 direct=control([],0)
 i=InstructionsStartFrom
-while i<len(Instructions):
-    if Instructions[i][0] in jumpRelated:
-        direct.__init__(Instructions[i],i)
-        i=direct.makeWay()
-    elif len(Instructions[i])==1:
-        i+=1
-    else:
-        direct.__init__(Instructions[i],i)
-        direct.makeWay()
-        i+=1
+# print(Instructions)
+
+with term.cbreak(), term.hidden_cursor():    
+    inp = term.inkey()
+    while i<len(Instructions):
+        print_registers()
+        print_memory()
+        y_pos=0
+        if Instructions[i][0] in jumpRelated:
+            direct.__init__(Instructions[i],i)
+            i=direct.makeWay()
+        elif len(Instructions[i])==1:
+            i+=1
+        else:
+            direct.__init__(Instructions[i],i)
+            direct.makeWay()
+            i+=1
 
 #   RESULTS OF THE SIMULATOR
 
 # print(Instructions)
-print(Registers)
-for i in Memory:
-    if i <MemoryIndex:
-        print(i,end=" : ")
-        print(Memory[i])
-    else:
-        break
+# print(Registers)
+# for i in Memory:
+#     if i <MemoryIndex:
+#         print(i,end=" : ")
+#         print(Memory[i])
+#     else:
+#         break
 # print(Memory)
 # print(Loops)
 # print(Data)
 # print(MemoryIndex)
+
+# GUI 
+
+# with term.cbreak(), term.hidden_cursor():    
+#     print_registers()
+#     print_memory()
+#     inp = term.inkey()
