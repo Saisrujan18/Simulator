@@ -32,14 +32,19 @@ term = Terminal()
 y_pos=0
 
 changed_register=""
-changed_mem=""
+
+changed_mem=0
+
 changed = False
+
 # 268435456 = 0x10000000
 
 # FEW HELPFULL FUNCTIONS 
 
-def print_registers(ch,chr):
+def print_registers():
     global y_pos    
+    global changed
+    global changed_register
     print(term.move_xy(term.width//2 - 5,2) + "REGISTERS")
     y_pos = 4
     x_pos = 0    
@@ -48,7 +53,8 @@ def print_registers(ch,chr):
         if x_pos+len(pri)+2 > term.width:
             x_pos = 0
             y_pos += 2
-        if ch == True:
+        if changed == True and changed_register==i:
+            changed=False
             print(term.move_xy(x_pos,y_pos) + term.on_bright_blue(pri))
         else:
             print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
@@ -56,6 +62,8 @@ def print_registers(ch,chr):
 
 def print_memory():
     global y_pos
+    global changed
+    global changed_mem
     x_pos = 0
     y_pos += 2
     print(term.move_xy(term.width//2 -3,y_pos) + "MEMORY")
@@ -67,7 +75,11 @@ def print_memory():
             y_pos += 2
         if i > MemoryIndex:
             break
-        print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
+        if changed == True and changed_mem==i:
+            changed=False
+            print(term.move_xy(x_pos,y_pos) + term.on_bright_blue(pri))
+        else:
+            print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
         x_pos += len(pri)+3
 
 def UpdateReturnAddress():
@@ -105,9 +117,11 @@ class add:
         sys.exit()
     
     def update(self):
-        Registers[self.instruction[1]] = Registers[self.instruction[2]] + Registers[self.instruction[3]]
+        global changed 
+        global changed_register
         changed = True
         changed_register=self.instruction[1]
+        Registers[self.instruction[1]] = Registers[self.instruction[2]] + Registers[self.instruction[3]]
 
 class sub:
     instruction=[]
@@ -125,11 +139,16 @@ class sub:
         sys.exit()
     
     def update(self):
+        global changed 
+        global changed_register
+        changed = True
+        changed_register=self.instruction[1]
         Registers[self.instruction[1]] = Registers[self.instruction[2]] - Registers[self.instruction[3]]
 
 class addi:
-    global changed, changed_register
+
     instruction=[]
+    
     def __init__(self,ins):
         self.instruction=copy.deepcopy(ins)
 
@@ -155,9 +174,10 @@ class addi:
             sys.exit()
     
     def update(self):
+        global changed 
+        global changed_register
         Registers[self.instruction[1]] = Registers[self.instruction[2]] + int(self.instruction[-1])
         changed = True
-        print(changed)
         changed_register=copy.deepcopy(self.instruction[1])
 
 class beq:
@@ -222,6 +242,10 @@ class slt:
         sys.exit()
     
     def update(self):
+        global changed 
+        global changed_register
+        changed = True
+        changed_register=self.instruction[1]
         if Registers[self.instruction[2]]<Registers[self.instruction[-1]]:
             Registers[self.instruction[1]]=1
             return
@@ -261,6 +285,10 @@ class lw:
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Registers[self.instructions[1]]=Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]
+        global changed 
+        global changed_register
+        changed = True
+        changed_register=self.instructions[1]
 
 class sw:
     instructions=[]
@@ -280,6 +308,10 @@ class sw:
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]=Registers[self.instructions[1]]
+        global changed 
+        global changed_mem
+        changed = True
+        changed_mem=(offset//4)*4 +Registers[self.instructions[-1]]
 
 class jal:
     instruction=[]
@@ -297,6 +329,10 @@ class jal:
         sys.exit()
     
     def update(self):
+        global changed 
+        global changed_register
+        changed = True
+        changed_register="$ra"
         Registers['$ra'] = self.indexPosition+1
         return Loops[self.instruction[-1]]
 
@@ -329,6 +365,10 @@ class la:
     
     def update(self):
         Registers[self.instructions[1]]=Data[self.instructions[-1]]
+        global changed
+        global changed_register
+        changed=True
+        changed_register=self.instructions[1]
 
 # MAIN CLASS WHERE EVERY INSTRUCTION IS SENT TO EXECUTE
 
@@ -509,7 +549,6 @@ for i in range(len(Instructions)):
 UpdateReturnAddress()
 direct=control([],0)
 i=InstructionsStartFrom
-# print(Instructions)
 
 with term.cbreak(), term.hidden_cursor():    
     while i<len(Instructions):
@@ -523,8 +562,7 @@ with term.cbreak(), term.hidden_cursor():
             direct.__init__(Instructions[i],i)
             direct.makeWay()
             i+=1
-        # print(changed)
-        print_registers(changed,changed_register)
+        print_registers()
         print_memory()
         which_instruction = str(Instructions[i])
         print(term.move_xy(0,y_pos+5)+term.on_darkolivegreen(which_instruction)+term.clear_eol)
@@ -533,27 +571,3 @@ with term.cbreak(), term.hidden_cursor():
 
         while term.inkey() == 'KEY_ENTER':
             print("ERROR")
-        # inp = term.inkey()
-
-#   RESULTS OF THE SIMULATOR
-
-print(Instructions)
-# print(Registers)
-# for i in Memory:
-#     if i <MemoryIndex:
-#         print(i,end=" : ")
-#         print(Memory[i])
-#     else:
-#         break
-# print(Memory)
-# print(Loops)
-# print(Data)
-# print(MemoryIndex)
-
-# GUI 
-
-# with term.cbreak(), term.hidden_cursor():    
-#     print_registers()
-#     print_memory()
-#     inp = term.inkey()
-
