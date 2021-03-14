@@ -10,6 +10,7 @@
 ### Installation
 ```
  pip install blessed
+ gh repo clone Saisrujan18/Simulator
 ```
 ### Description
 
