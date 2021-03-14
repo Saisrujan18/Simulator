@@ -7,6 +7,9 @@ from blessed import Terminal
 
 # ELEPHANT IN THE ROOM
 
+import os
+os.system('cls' if os.name == 'nt' else 'clear')
+
 Instructions=[]
 
 operations=['add','addi','sub','bne','beq','j',"lw","sw","la","jal","jr","slt"]
@@ -29,7 +32,8 @@ Stackpointer=1023*4+268435456
 
 term = Terminal()
 
-y_pos=0
+y_pos = 2
+x_pad = (term.width - 2*(term.width//3) - 20)//2
 
 changed_register=""
 
@@ -45,17 +49,17 @@ def print_registers():
     global y_pos    
     global changed
     global changed_register
-    print(term.move_xy(term.width//2 - 5,2) + "REGISTERS")
-    y_pos = 4
-    x_pos = 0    
+    print(term.move_xy(x_pad,2)+term.on_cyan(" REGISTERS "))
+    y_pos = 4   
+    x_pos = x_pad
     for i in Registers:
         pri = f' {i} : {Registers[i]} '
         if x_pos+len(pri)+2 > term.width:
-            x_pos = 0
+            x_pos = x_pad
             y_pos += 2
         if changed == True and changed_register==i:
-            changed=False
-            print(term.move_xy(x_pos,y_pos) + term.on_bright_blue(pri))
+            changed_register = ""
+            print(term.move_xy(x_pos,y_pos) + term.on_bright_green(pri))
         else:
             print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
         x_pos += term.width//3
@@ -64,23 +68,23 @@ def print_memory():
     global y_pos
     global changed
     global changed_mem
-    x_pos = 0
+    x_pos = x_pad
     y_pos += 2
-    print(term.move_xy(term.width//2 -3,y_pos) + "MEMORY")
+    print(term.move_xy(x_pad,y_pos)+term.on_cyan(" MEMORY "))
     y_pos+=2
     for i in Memory:
-        pri = f' {i} : {Memory[i]} '
-        if x_pos+len(pri)+2 > term.width:
-            x_pos = 0
-            y_pos += 2
-        if i > MemoryIndex:
+        if i >= MemoryIndex:
             break
+        pri = f' [{i}] : {Memory[i]} '
+        if x_pos+len(pri)+2 > term.width:
+            x_pos = x_pad
+            y_pos += 2
         if changed == True and changed_mem==i:
-            changed=False
-            print(term.move_xy(x_pos,y_pos) + term.on_bright_blue(pri))
+            print(term.move_xy(x_pos,y_pos) + term.on_bright_green(pri)+term.clear_eol)
+            changed_mem = -1
         else:
             print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
-        x_pos += len(pri)+3
+        x_pos += len(pri)+5
 
 def UpdateReturnAddress():
     global Stackpointer
@@ -295,6 +299,8 @@ class sw:
     def __init__(self,ins):
         self.instructions=copy.deepcopy(ins)
     def check(self):
+        global changed 
+        global changed_mem
         if checkRegister(self.instructions[1])==False:
             sys.exit()
         self.instructions[-1]=self.instructions[-1].replace("(","")
@@ -308,9 +314,8 @@ class sw:
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]=Registers[self.instructions[1]]
-        global changed 
-        global changed_mem
         changed = True
+        # print(changed)
         changed_mem=(offset//4)*4 +Registers[self.instructions[-1]]
 
 class jal:
@@ -438,7 +443,7 @@ class control:
 
 #   FETCHING ALL LINES FROM ADDITION.ASM
 
-with open("Addition.asm") as f:
+with open("assembly.asm") as f:
     Instructions= f.readlines()
 
 #   SPLITING EACHLINE ACCORDINGLY
@@ -551,8 +556,9 @@ direct=control([],0)
 i=InstructionsStartFrom
 
 with term.cbreak(), term.hidden_cursor():    
+    step = True
+    lstInstruction = ""
     while i<len(Instructions):
-        term.clear()
         if Instructions[i][0] in jumpRelated:
             direct.__init__(Instructions[i],i)
             i=direct.makeWay()
@@ -564,10 +570,23 @@ with term.cbreak(), term.hidden_cursor():
             i+=1
         print_registers()
         print_memory()
-        which_instruction = str(Instructions[i])
-        print(term.move_xy(0,y_pos+5)+term.on_darkolivegreen(which_instruction)+term.clear_eol)
+        if(i >= len(Instructions)):
+            break
+        which_instruction = ' '.join(Instructions[i])
+        print(term.move_xy(2,y_pos+5)+"Executed: "+term.on_darkolivegreen(lstInstruction)+term.clear_eol)
+        print(term.move_xy(2,y_pos+8)+"Next-Up:  "+term.on_darkolivegreen(which_instruction)+term.clear_eol)
         y_pos=0
         changed = False
-
-        while term.inkey() == 'KEY_ENTER':
-            print("ERROR")
+        lstInstruction = which_instruction        
+        if not step:
+            continue
+        val = term.inkey()
+        while val == 'KEY_ENTER' or val == 'q':
+            if val == 'q':
+                step = False
+                break
+            val = term.inkey()
+    # print_registers()
+    # print_memory()
+    print(term.move_xy(x_pad,y_pos+10)+term.on_green(" DONE "))
+    sys.exit

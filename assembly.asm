@@ -8,6 +8,8 @@ main:
     addi $t1,$t1,20  # n - 1
     addi $t2,$t2,0  # iterator = i 
     addi $t4,$t4,4 
+    la $s0, array
+    sw $t1, 0($s0)
 loop1:
     beq $t2,$t0,exit # i == n
     la $s0,array
