@@ -3,11 +3,11 @@
 import re
 import sys
 import copy
+import os
 from blessed import Terminal
 
 # ELEPHANT IN THE ROOM
 
-import os
 os.system('cls' if os.name == 'nt' else 'clear')
 
 Instructions=[]
@@ -32,8 +32,9 @@ Stackpointer=1023*4+268435456
 
 term = Terminal()
 
-y_pos = 2
 x_pad = (term.width - 2*(term.width//3) - 20)//2
+
+y_pos = 2
 
 changed_register=""
 
@@ -59,7 +60,7 @@ def print_registers():
             y_pos += 2
         if changed == True and changed_register==i:
             changed_register = ""
-            print(term.move_xy(x_pos,y_pos) + term.on_bright_green(pri))
+            print(term.move_xy(x_pos,y_pos) + term.on_bright_green(pri)+term.clear_eol)
         else:
             print(term.move_xy(x_pos,y_pos) + term.on_darkolivegreen(pri))
         x_pos += term.width//3
@@ -443,7 +444,7 @@ class control:
 
 #   FETCHING ALL LINES FROM ADDITION.ASM
 
-with open("assembly.asm") as f:
+with open("Bubblesort.asm") as f:
     Instructions= f.readlines()
 
 #   SPLITING EACHLINE ACCORDINGLY
@@ -516,7 +517,6 @@ while i<n:
     i+=1
 
 
-
 if [".data"] in Instructions:
     i=1
     while Instructions[i]!=['.text']:
@@ -536,7 +536,6 @@ for i in range(len(Instructions)):
 for i in range(1,whereistext):
     AddToMemory(Instructions[i])
 
-
 # <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
 
 InstructionsStartFrom=len(Instructions)
@@ -549,11 +548,13 @@ for i in range(len(Instructions)):
                 Loops.update({Instructions[j][0]:j})
         break
 
-#   HEART OF THE SIMULATOR
 
 UpdateReturnAddress()
 direct=control([],0)
 i=InstructionsStartFrom
+
+#   HEART OF THE SIMULATOR
+#   GUI USING CONSOLE
 
 with term.cbreak(), term.hidden_cursor():    
     step = True
@@ -586,7 +587,5 @@ with term.cbreak(), term.hidden_cursor():
                 step = False
                 break
             val = term.inkey()
-    # print_registers()
-    # print_memory()
-    print(term.move_xy(x_pad,y_pos+10)+term.on_green(" DONE "))
-    sys.exit
+    print(term.move_xy(0,y_pos+10)+term.on_green(term.center(" DONE ")))
+    sys.exit()
