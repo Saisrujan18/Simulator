@@ -1,3 +1,4 @@
+
 # SIMULATOR
 
 /// this is console based display
@@ -8,4 +9,4 @@
 // to skip over single step execution just press q and it will take over
 // finally a Green "Done" shows up at the bottom indicating the completion of the execution
 
-![alt text](https://github.com/[Saisrujan18]/[Saisrujan18]/blob/[main]/db9afa1b-ecbe-49bd-92e3-0c38d19f378d.gif?raw=true)
+![db9afa1b-ecbe-49bd-92e3-0c38d19f378d](https://user-images.githubusercontent.com/68287683/111061326-c1855b00-84c8-11eb-8537-ad9c90f58910.gif)
