@@ -29,11 +29,11 @@ MemoryIndex=268435456
 
 Stackpointer=1023*4+268435456
 
-IF,IDRF,EX,MEM,WB=-1,-1,-1,-1,-1
+IF,IDRF,EX,MEM,WB=[],[],[],[],[]
 
 BufferRegisters=[0,0,0,0,0]
 
-Stalls=0
+STALLS,CLOCK=0,0
 
 isForwardingOn=False
 
@@ -486,16 +486,103 @@ i=InstructionsStartFrom
 #   HEART OF THE SIMULATOR
 #   GUI USING CONSOLE
 
-count=0
+# PHASE 2 SPECIAL FUNCTIONS
+PC=0
+Operating={}
 
-while WB==len(Instructions)-1:
-    if Instructions[i][0] in jumpRelated:
-        direct.__init__(Instructions[i],i)
-        i=direct.makeWay()
-    else:
-        direct.__init__(Instructions[i],i)
-        direct.makeWay()
-        i+=1
+class S1:
 
-print(Registers)
-print(Memory)
+    def __init__(self):
+        print("",end="")
+    
+    def purpose(self):
+        global IF,PC
+        IF=copy.deepcopy(Instructions[PC])
+        PC+=1
+        if PC==len(Instructions):
+            IF=[]
+        return False
+
+class S2:
+
+    def __init__(self):
+        print("",end="")
+    
+    def purpose():
+        global IDRF
+        global Operating
+
+class S3:
+
+    def __init__(self):
+        print("",end="")
+    
+    def purpose():
+        global IDRF
+
+class S4:
+
+    def __init__(self):
+        print("",end="")
+    
+    def purpose():
+        global IDRF
+
+class S5:
+
+    def __init__(self):
+        print("",end="")
+    
+    def purpose():
+        global IDRF
+
+
+IFER=S1()
+IDRFER=S2()
+EXER=S3()
+MEMER=S4()
+WBER=S5()
+
+Instructions.append(["BYTESPLEASE"])
+start=True
+
+while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
+
+    start=False
+    CLOCK+=1
+    isthereastall=False
+    
+    if isthereastall==False:
+        isthereastall=IFER.purpose()
+    
+    if isthereastall==False:
+        isthereastall=IDRFER.purpose()
+    
+    if isthereastall==False:
+        isthereastall=EXER.purpose()
+    
+    if isthereastall==False:
+        isthereastall=MEMER.purpose()
+    
+    if isthereastall==False:
+        isthereastall=WBER.purpose()
+    
+    if isthereastall==True:
+        STALLS+=1
+
+    WB=copy.deepcopy(MEM)
+    MEM=copy.deepcopy(EX)
+    EX=copy.deepcopy(IDRF)
+    IDRF=copy.deepcopy(IF)
+    
+    # if Instructions[i][0] in jumpRelated:
+    #     direct.__init__(Instructions[i],i)
+    #     i=direct.makeWay()
+    # else:
+    #     direct.__init__(Instructions[i],i)
+    #     direct.makeWay()
+    #     i+=1
+
+
+# print(Registers)
+# print(Memory)
