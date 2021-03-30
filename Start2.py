@@ -12,6 +12,9 @@ operations=['add','addi','sub','bne','beq','j',"lw","sw","la","jal","jr","slt"]
 
 NormalOperations=["add","addi","sub","la","slt"]
 
+ComparisonOperations=["beq","bne"]
+
+
 
 Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0,"$k0":0,"$k1":1}
 
@@ -29,7 +32,7 @@ MemoryIndex=268435456
 
 Stackpointer=1023*4+268435456
 
-IF,IDRF,EX,MEM,WB=[],[],[],[],[]
+IF,IDRF,EX,MEM,WB=[],[],[],[],[] 
 
 BufferRegisters=[0,0,0,0,0]
 
@@ -365,7 +368,7 @@ class control:
 
 #   FETCHING ALL LINES FROM ADDITION.ASM
 
-with open("Bubblesort.asm") as f:
+with open("test.asm") as f:
     Instructions= f.readlines()
 
 #   SPLITING EACHLINE ACCORDINGLY
@@ -489,52 +492,104 @@ i=InstructionsStartFrom
 # PHASE 2 SPECIAL FUNCTIONS
 PC=0
 Operating={}
+# print(Instructions)
 
+RegStatus={"$s0":[0,0],"$s1":[0,0],"$s2":[0,0],"$s3":[0,0],
+            "$s4":[0,0],"$s5":[0,0],"$s6":[0,0],"$s7":[0,0],"$t0":[0,0],
+            "$t1":[0,0],"$t2":[0,0],"$t3":[0,0],"$t4":[0,0],"$t5":[0,0],
+            "$t6":[0,0],"$t7":[0,0],"$t8":[0,0],"$t9":[0,0],"$zero":[0,0],
+            "$a0":[0,0],"$a1":[0,0],"$a2":[0,0],"$a3":[0,0],"$v0":[0,0],
+            "$v1":[0,0],"$gp":[0,0],"$fp":[0,0],"$sp":[0,0],"$ra":[0,0],
+            "$at":[0,0],"$k0":[0,0],"$k1":1}
+
+stageStatus = [False,False,False,False,False]
 class S1:
-
     def __init__(self):
         print("",end="")
     
     def purpose(self):
-        global IF,PC
-        IF=copy.deepcopy(Instructions[PC])
-        PC+=1
-        if PC==len(Instructions):
-            IF=[]
+        global IF,PC,Instructions
+        if stageStatus[1] == False:
+            if PC==len(Instructions):
+                IF=[]
+            else:
+                IF=copy.deepcopy(Instructions[PC])
+                PC+=1
         return False
-
+first = True
 class S2:
-
     def __init__(self):
         print("",end="")
     
-    def purpose():
-        global IDRF
+    def purpose(self,CLOCK):
+        ## to write for j,jal,jr --> done !!
+        global IDRF # add $r1,$r2,$r3
         global Operating
+        global RegStatus
+        global first
+        global PC
+        if IDRF != [] and IDRF[0] in NormalOperations: 
+            if IDRF[0] == "la":
+                return False
+            max_delay = 0
+            if RegStatus[IDRF[2]][0] == 1:
+                max_delay = max(max_delay, RegStatus[IDRF[2]][1])
+
+            if RegStatus[IDRF[3]][0] == 1:
+                max_delay = max(max_delay, RegStatus[IDRF[3]][1])
+            RegStatus[IDRF[1]] = [1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4))]
+            stall = (True if max_delay > (CLOCK+1) else False) 
+            return [stall,False]
+        elif IDRF!= [] and IDRF[0] in MemoryRelated:
+            if IDRF[0] == "lw":
+                RegStatus[IDRF[1]] = [1,CLOCK+3]
+        elif IDRF!=[] and IDRF[0] in ComparisonOperations:
+            max_delay = 0
+            if RegStatus[IDRF[1]][0] == 1:
+                max_delay = max(max_delay, RegStatus[IDRF[1]][1])
+            if RegStatus[IDRF[2]][0] == 1:
+                max_delay = max(max_delay, RegStatus[IDRF[2]][1])
+            stall = (True if max_delay > (CLOCK+1) else False)
+            return [stall,False]
+        elif IDRF!=[] and IDRF[0] in jumpRelated:
+            PC = Loops[IDRF[1]]
+            return [False,True]
+        return [False,False]
+        
 
 class S3:
-
+    ## to write for bne beq and also call for execute
+    ## idea -> if true change PC and return to True to stash the current inst
+    ## Else continue 
     def __init__(self):
         print("",end="")
     
-    def purpose():
-        global IDRF
+    def purpose(self,CLOCK):
+        global EX
+        global RegStatus
+        if EX!= [] and EX[0] in NormalOperations:
+            pass
+
 
 class S4:
-
     def __init__(self):
         print("",end="")
     
-    def purpose():
-        global IDRF
+    def purpose(self,CLOCK):
+        global MEM
+        global RegStatus
+        if MEM!=[] and MEM[0] in NormalOperations:
+            pass
 
 class S5:
-
     def __init__(self):
         print("",end="")
     
-    def purpose():
+    def purpose(self,CLOCK):
         global IDRF
+        global RegStatus
+        if WB!= [] and WB[0] in NormalOperations:
+            RegStatus[WB[1]] = [0,CLOCK+1]
 
 
 IFER=S1()
@@ -546,35 +601,50 @@ WBER=S5()
 Instructions.append(["BYTESPLEASE"])
 start=True
 
-while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
+insnum = 0
+stinst = []
 
+while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
     start=False
     CLOCK+=1
-    isthereastall=False
-    
-    if isthereastall==False:
-        isthereastall=IFER.purpose()
-    
-    if isthereastall==False:
-        isthereastall=IDRFER.purpose()
-    
-    if isthereastall==False:
-        isthereastall=EXER.purpose()
-    
-    if isthereastall==False:
-        isthereastall=MEMER.purpose()
-    
-    if isthereastall==False:
-        isthereastall=WBER.purpose()
-    
-    if isthereastall==True:
-        STALLS+=1
+    isthereastall = False
+    IFER.purpose()
+    print(IF,IDRF,EX,MEM,WB)
+    # print(IF)
+    stageStatus[0] = False
+        
+    isthereastall,isjump=IDRFER.purpose(CLOCK)
+    # print(isthereastall)
+    stageStatus[1] = False
+    if isjump:        
+        IF = []
+    if isthereastall:
+        stageStatus[1] = True
 
+    
+    EXER.purpose(CLOCK)
+    
+    MEMER.purpose(CLOCK)
+    
+    WBER.purpose(CLOCK)
+    
+    if isthereastall:
+        STALLS+=1
+        stinst.append(IDRF)
+    
     WB=copy.deepcopy(MEM)
     MEM=copy.deepcopy(EX)
-    EX=copy.deepcopy(IDRF)
-    IDRF=copy.deepcopy(IF)
-    
+
+    if stageStatus[2] == False:
+        if stageStatus[1] == False:
+            EX=copy.deepcopy(IDRF)
+        else:
+            EX=[]
+    if stageStatus[1] == False:
+        IDRF=copy.deepcopy(IF)
+        
+    # print(IDRF)
+        
     # if Instructions[i][0] in jumpRelated:
     #     direct.__init__(Instructions[i],i)
     #     i=direct.makeWay()
@@ -583,6 +653,7 @@ while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
     #     direct.makeWay()
     #     i+=1
 
-
+print(STALLS)
+print(stinst)
 # print(Registers)
 # print(Memory)
