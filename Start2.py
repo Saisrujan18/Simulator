@@ -14,15 +14,16 @@ NormalOperations=["add","addi","sub","la","slt"]
 
 ComparisonOperations=["beq","bne"]
 
+NonComparisionJumps=["j",'jal','jr']
+
+jumpRelated=["j","beq","bne","jal","jr"]
+
+MemoryRelated=["lw","sw","la"]
 
 
 Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0,"$k0":0,"$k1":1}
 
 Loops={}
-
-jumpRelated=["j","beq","bne","jal","jr"]
-
-MemoryRelated=["lw","sw","la"]
 
 Memory={268435456+4*i:0 for i in range(1024)}
 
@@ -382,11 +383,6 @@ for i in range(len(Instructions)):
 
 for i in range(len(Instructions)):
     for j in range(len(Instructions[i])):
-        if Instructions[i][j].find(";")!=-1 :
-            temp=Instructions[i]
-            temp=temp[:j]
-            Instructions[i]=temp
-            break
         if Instructions[i][j].find("#")!=-1 :
             temp=Instructions[i]
             temp=temp[:j]
@@ -406,6 +402,8 @@ for i in range(len(Instructions)):
         while "\t" in Instructions[i][j]:
             Instructions[i][j]=Instructions[i][j].replace("\t","")
 
+# CHECKING CORRECTNESS
+
 if [".text"]  in Instructions:
     temp1=Instructions.index([".text"])
     if Instructions[temp1+1]==[".globl","main"]:
@@ -414,7 +412,6 @@ if [".text"]  in Instructions:
         sys.exit()
 else:
     sys.exit()
-
 
 
 if ['.text'] not in Instructions or [".globl","main"] not in Instructions:
@@ -428,8 +425,11 @@ for i in range(len(Instructions)):
         whereisgloblmain=i
         break
 
+
 i=whereisgloblmain
+
 n=len(Instructions)
+
 while i<n:
     if Instructions[i][0] not in operations and len(Instructions[i])>2:
         Loops.update({Instructions[i][0]:i})
@@ -461,36 +461,43 @@ for i in range(1,whereistext):
     AddToMemory(Instructions[i])
 
 # <<<<<<< MANIPULATING INSTRUCTIONS ENDS HERE
+Instructions=Instructions[whereisgloblmain:]
+InstructionsStartFrom=0
 
-InstructionsStartFrom=len(Instructions)
-
-for i in range(len(Instructions)):
-    if Instructions[i][0]=="main":
-        InstructionsStartFrom=i
-        for j in range(InstructionsStartFrom,len(Instructions)):
-            if len(Instructions[j])==1:
-                Loops.update({Instructions[j][0]:j})
+# #############################################################################
+itr=0
+while True:
+    if len(Instructions[itr])==1:
+        Loops.update({Instructions[itr][0]:itr})
+        Instructions.pop(itr)
+    itr+=1
+    if itr>=len(Instructions):
         break
 
-Instructions=Instructions[InstructionsStartFrom:]
-n=len(Instructions)
-i=0
-while i<n:
-    if len(Instructions[i])==1:
-        Instructions.pop(i)
-    n=len(Instructions)
-    i+=1
-# print(Instructions)
+# #############################################################################
+
+
+# n=len(Instructions)
+# i=0
+# while i<n:
+#     if len(Instructions[i])==1:
+#         Instructions.pop(i)
+#     n=len(Instructions)
+#     i+=1
+# # print(Instructions)
 
 UpdateReturnAddress()
 direct=control([],0)
-i=InstructionsStartFrom
+
+for i in range(len(Instructions)):
+    Instructions[i].append(i)
+
 
 #   HEART OF THE SIMULATOR
 #   GUI USING CONSOLE
 
 # PHASE 2 SPECIAL FUNCTIONS
-PC=0
+PC=InstructionsStartFrom
 Operating={}
 # print(Instructions)
 
@@ -503,6 +510,7 @@ RegStatus={"$s0":[0,0],"$s1":[0,0],"$s2":[0,0],"$s3":[0,0],
             "$at":[0,0],"$k0":[0,0],"$k1":1}
 
 stageStatus = [False,False,False,False,False]
+
 class S1:
     def __init__(self):
         print("",end="")
@@ -516,7 +524,9 @@ class S1:
                 IF=copy.deepcopy(Instructions[PC])
                 PC+=1
         return False
+
 first = True
+
 class S2:
     def __init__(self):
         print("",end="")
@@ -528,6 +538,7 @@ class S2:
         global RegStatus
         global first
         global PC
+
         if IDRF != [] and IDRF[0] in NormalOperations: 
             if IDRF[0] == "la":
                 return False
@@ -540,9 +551,11 @@ class S2:
             RegStatus[IDRF[1]] = [1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4))]
             stall = (True if max_delay > (CLOCK+1) else False) 
             return [stall,False]
+        
         elif IDRF!= [] and IDRF[0] in MemoryRelated:
             if IDRF[0] == "lw":
                 RegStatus[IDRF[1]] = [1,CLOCK+3]
+        
         elif IDRF!=[] and IDRF[0] in ComparisonOperations:
             max_delay = 0
             if RegStatus[IDRF[1]][0] == 1:
@@ -551,9 +564,10 @@ class S2:
                 max_delay = max(max_delay, RegStatus[IDRF[2]][1])
             stall = (True if max_delay > (CLOCK+1) else False)
             return [stall,False]
+        
         elif IDRF!=[] and IDRF[0] in jumpRelated:
             PC = Loops[IDRF[1]]
-            return [False,True]
+            return [True,True]
         return [False,False]
         
 
@@ -565,11 +579,22 @@ class S3:
         print("",end="")
     
     def purpose(self,CLOCK):
-        global EX
+        global EX,PC,STALLS
         global RegStatus
-        if EX!= [] and EX[0] in NormalOperations:
-            pass
-
+        if EX==[]:
+            return []
+        whichop=EX[0]
+        if whichop in NormalOperations or whichop in MemoryRelated:
+            direct.__init__(EX[:-1],0)
+            direct.makeWay()
+        elif whichop in ComparisonOperations:
+            direct.__init__(EX[:-1],EX[-1])
+            C=direct.makeWay()
+            if C==EX[-1]+1:
+                pass
+            else:
+                return [True,C]
+        return []
 
 class S4:
     def __init__(self):
@@ -605,25 +630,37 @@ insnum = 0
 stinst = []
 
 while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
+    print("q")
     start=False
     CLOCK+=1
+    
     isthereastall = False
+    
     IFER.purpose()
+    
     print(IF,IDRF,EX,MEM,WB)
     # print(IF)
+    
     stageStatus[0] = False
         
     isthereastall,isjump=IDRFER.purpose(CLOCK)
     # print(isthereastall)
     stageStatus[1] = False
+    
     if isjump:        
         IF = []
-    if isthereastall:
+        IDRF=[]
+    elif isthereastall:
         stageStatus[1] = True
+    
+    ExOutput=EXER.purpose(CLOCK)
+    
+    if ExOutput!=[]:
+        STALLS+=1
+        PC=ExOutput[-1]
+        IF=[]
+        IDRF,EX=[],[]
 
-    
-    EXER.purpose(CLOCK)
-    
     MEMER.purpose(CLOCK)
     
     WBER.purpose(CLOCK)
@@ -642,18 +679,9 @@ while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
             EX=[]
     if stageStatus[1] == False:
         IDRF=copy.deepcopy(IF)
-        
-    # print(IDRF)
-        
-    # if Instructions[i][0] in jumpRelated:
-    #     direct.__init__(Instructions[i],i)
-    #     i=direct.makeWay()
-    # else:
-    #     direct.__init__(Instructions[i],i)
-    #     direct.makeWay()
-    #     i+=1
 
 print(STALLS)
-print(stinst)
+
+# print(stinst)
 # print(Registers)
 # print(Memory)
