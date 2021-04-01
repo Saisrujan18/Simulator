@@ -1,6 +1,6 @@
 .data
 array: 
-    .word 3, 2, 1, 5, 8, 10
+    .word 100, 2, 1, 5, 10, 8
 .text 
 .globl main
 main:   
@@ -9,7 +9,7 @@ main:
     addi $t2,$t2,0  # iterator = i 
     addi $t4,$t4,4 
     la $s0, array
-    sw $t1, 0($s0)
+    # sw $t1, 0($s0)
 loop1:
     beq $t2,$t0,exit # i == n
     la $s0,array

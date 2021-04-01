@@ -1,4 +1,5 @@
 # IMPORTING ALL THE LIBRARIES
+from collections import OrderedDict
 
 import re
 import sys
@@ -368,8 +369,8 @@ class control:
 # >>>>>>> MANIPULAING INSTRUCTIONS START
 
 #   FETCHING ALL LINES FROM ADDITION.ASM
-
-with open("test.asm") as f:
+# Bubblesort
+with open("Bubblesort.asm") as f:
     Instructions= f.readlines()
 
 #   SPLITING EACHLINE ACCORDINGLY
@@ -538,39 +539,65 @@ class S2:
         global RegStatus
         global first
         global PC
-
-        if IDRF != [] and IDRF[0] in NormalOperations: 
-            if IDRF[0] == "la":
-                return False
+        if IDRF != [] and IDRF[0] == "addi":
             max_delay = 0
-            if RegStatus[IDRF[2]][0] == 1:
+            if RegStatus[IDRF[2]][0] > 0:
+                max_delay = max(max_delay, RegStatus[IDRF[2]][0])
+            RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1],max(max_delay + 1, (CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
+        elif IDRF != [] and IDRF[0] in NormalOperations: 
+            if IDRF[0] == "la":
+                RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][1]+1,CLOCK+3 + (0 if isForwardingOn else 1)]
+                return [False,False]
+            max_delay = 0
+            if RegStatus[IDRF[2]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[2]][1])
 
-            if RegStatus[IDRF[3]][0] == 1:
+            if RegStatus[IDRF[3]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[3]][1])
-            RegStatus[IDRF[1]] = [1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4))]
+            RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1]+1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
+            # if IDRF[0] == "slt":
+                # print(max_delay,CLOCK,IDRF)
             stall = (True if max_delay > (CLOCK+1) else False) 
             return [stall,False]
         
         elif IDRF!= [] and IDRF[0] in MemoryRelated:
             if IDRF[0] == "lw":
-                RegStatus[IDRF[1]] = [1,CLOCK+3]
-        
+                reg = IDRF[-2].find('$')
+                reg = IDRF[-2][reg:-1]
+                RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[reg][1]+1,CLOCK + 3 + (0 if isForwardingOn else 1))]
+                # print(RegStatus[IDRF[1]],CLOCK)
+            if IDRF[0] == "sw":
+                # print(IDRF)
+                reg = IDRF[-2].find('$')
+                reg = IDRF[-2][reg:-1]
+                # reg = "$t1"
+                max_delay = 0;
+                if RegStatus[reg][0] > 0:
+                    max_delay =  RegStatus[reg][1]
+                stall = (True if max_delay > (CLOCK+1) else False)
+                return [stall,False]
+
         elif IDRF!=[] and IDRF[0] in ComparisonOperations:
             max_delay = 0
-            if RegStatus[IDRF[1]][0] == 1:
+            if RegStatus[IDRF[1]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[1]][1])
-            if RegStatus[IDRF[2]][0] == 1:
+            if RegStatus[IDRF[2]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[2]][1])
+            # print(max_delay,IDRF[1],IDRF[2])
             stall = (True if max_delay > (CLOCK+1) else False)
             return [stall,False]
         
         elif IDRF!=[] and IDRF[0] in jumpRelated:
-            PC = Loops[IDRF[1]]
+            if IDRF[0] == "jr":
+                PC = Registers["$ra"]
+                # if PC > len(Instructions)
+            else:
+                PC = Loops[IDRF[1]]
             return [True,True]
         return [False,False]
         
 
+instruction_count = 0;
 class S3:
     ## to write for bne beq and also call for execute
     ## idea -> if true change PC and return to True to stash the current inst
@@ -579,7 +606,7 @@ class S3:
         print("",end="")
     
     def purpose(self,CLOCK):
-        global EX,PC,STALLS
+        global EX,PC,STALLS,instruction_count
         global RegStatus
         if EX==[]:
             return []
@@ -588,11 +615,14 @@ class S3:
             direct.__init__(EX[:-1],0)
             direct.makeWay()
         elif whichop in ComparisonOperations:
+            instruction_count += 1
             direct.__init__(EX[:-1],EX[-1])
             C=direct.makeWay()
-            if C==EX[-1]+1:
+            # print(C,"njerer")
+            if C==(EX[-1]+1):
                 pass
             else:
+                # print(C,"eererer")
                 return [True,C]
         return []
 
@@ -605,17 +635,18 @@ class S4:
         global RegStatus
         if MEM!=[] and MEM[0] in NormalOperations:
             pass
-
 class S5:
     def __init__(self):
         print("",end="")
     
     def purpose(self,CLOCK):
+        global instruction_count
         global IDRF
         global RegStatus
         if WB!= [] and WB[0] in NormalOperations:
-            RegStatus[WB[1]] = [0,CLOCK+1]
-
+            RegStatus[WB[1]] = [max(0,RegStatus[WB[1]][0]-1),CLOCK+1]
+        if WB != []:
+            instruction_count += 1
 
 IFER=S1()
 IDRFER=S2()
@@ -629,8 +660,10 @@ start=True
 insnum = 0
 stinst = []
 
-while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
-    print("q")
+okayyy = int(input("WITH OR WITHOUT FORWARDING: "))
+
+while start==True or WB!=["BYTESPLEASE"]:
+    isForwardingOn = True if okayyy > 0 else False
     start=False
     CLOCK+=1
     
@@ -652,11 +685,16 @@ while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
         IDRF=[]
     elif isthereastall:
         stageStatus[1] = True
+        STALLS += 1
+        # print(IDRF)
+        stinst.append(IDRF[:-1])
     
     ExOutput=EXER.purpose(CLOCK)
     
     if ExOutput!=[]:
-        STALLS+=1
+        # STALLS += 1;
+        # stinst.append(EX[:-1])
+        RegStatus[IDRF[1]] =[0,0]
         PC=ExOutput[-1]
         IF=[]
         IDRF,EX=[],[]
@@ -664,10 +702,6 @@ while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
     MEMER.purpose(CLOCK)
     
     WBER.purpose(CLOCK)
-    
-    if isthereastall:
-        STALLS+=1
-        stinst.append(IDRF)
     
     WB=copy.deepcopy(MEM)
     MEM=copy.deepcopy(EX)
@@ -679,9 +713,14 @@ while start==True or IF!=[] or EX!=[] or IDRF!=[] or MEM!=[] or WB!=[]:
             EX=[]
     if stageStatus[1] == False:
         IDRF=copy.deepcopy(IF)
-
-print(STALLS)
-
-# print(stinst)
+# print(Instructions)
+print("Number of Stalls = ",STALLS)
+print("Instruction causing Stalls:")
+stnewinst = []
+[stnewinst.append(x) for x in stinst if x not in stnewinst ]
+print(stnewinst)
+print(instruction_count-1,CLOCK-4)
+print("I P C : ", end="")
+print((instruction_count-1)/(CLOCK-4))
 # print(Registers)
-# print(Memory)
+print(Memory)
