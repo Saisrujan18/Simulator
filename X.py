@@ -534,7 +534,7 @@ class S5:
         print("",end="")
     
     def purpose():
-        global IDRF
+        pass
 
 
 IFER=S1()
