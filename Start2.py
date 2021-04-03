@@ -22,7 +22,7 @@ jumpRelated=["j","beq","bne","jal","jr"]
 MemoryRelated=["lw","sw","la"]
 
 
-Registers={"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,"$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,"$at":0,"$k0":0,"$k1":1}
+Registers={"$zero":0,"$at":0,"$v0":0,"$v1":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t8":0,"$t9":0,"$k0":0,"$k1":1,"$gp":0,"$sp":0,"$s8":0,"$ra":0}
 
 Loops={}
 
@@ -660,7 +660,7 @@ start=True
 insnum = 0
 stinst = []
 
-okayyy = int(input("WITH OR WITHOUT FORWARDING: "))
+okayyy = int(input("Enter \'0\' to disable \"FORWARDING\" else Enter \'1\' : "))
 
 while start==True or WB!=["BYTESPLEASE"]:
     isForwardingOn = True if okayyy > 0 else False
@@ -671,7 +671,7 @@ while start==True or WB!=["BYTESPLEASE"]:
     
     IFER.purpose()
     
-    print(IF,IDRF,EX,MEM,WB)
+    # print(IF,IDRF,EX,MEM,WB)
     # print(IF)
     
     stageStatus[0] = False
@@ -713,14 +713,43 @@ while start==True or WB!=["BYTESPLEASE"]:
             EX=[]
     if stageStatus[1] == False:
         IDRF=copy.deepcopy(IF)
-# print(Instructions)
-print("Number of Stalls = ",STALLS)
-print("Instruction causing Stalls:")
+
 stnewinst = []
 [stnewinst.append(x) for x in stinst if x not in stnewinst ]
-print(stnewinst)
-print(instruction_count-1,CLOCK-4)
-print("I P C : ", end="")
+
+# print(instruction_count-1,CLOCK-4)
+
+
+print("{:-^100s}".format("REGISTERS"))
+print()
+itr=0
+for i in Registers:
+    print("R{:3} {:7} = {}".format(str(itr),"["+str(i)+"]",Registers[i]))
+    itr+=1
+print()
+print("{:-^100s}".format(""))
+print("{:-^100s}".format("MEMORY"))
+print()
+for i in Memory:
+    if i<MemoryIndex:
+        print("{:13} : {}".format(str(i),str(Memory[i])))
+    else:
+        break
+print()
+print("{:-^100s}".format(""))
+print("{:-^100s}".format(""))
+print()
+
+print("{:27} : {}".format("Number of Stalls",str(STALLS)))
+print()
+print("{:27} :".format("Instructions Per Count"), end=" ")
 print((instruction_count-1)/(CLOCK-4))
-# print(Registers)
-print(Memory)
+print()
+print("Instruction causing Stalls  :")
+print("\n")
+for i in range(len(stnewinst)):
+    x=" , ".join(stnewinst[i])
+    print(x)
+    print()
+
+print("{:-^100s}".format(""))

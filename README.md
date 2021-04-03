@@ -59,4 +59,4 @@ __*SneakPeek :*__
    * Instructions per Cycle
    * List of Instructions which resulted in stalls
 
-Run __start2.py__ in your terminal to execute the program.
+Run __python start2.py__ in your terminal to execute the program.
