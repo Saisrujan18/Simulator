@@ -1,3 +1,4 @@
+
 # IMPORTING ALL THE LIBRARIES
 from collections import OrderedDict
 
@@ -526,8 +527,8 @@ class S1:
                 PC+=1
         return False
 
-first = True
-
+wastherestall = False
+IDRF_prev = 0
 class S2:
     def __init__(self):
         print("",end="")
@@ -539,10 +540,21 @@ class S2:
         global RegStatus
         global first
         global PC
+        global wastherestall
+        global IDRF_prev
+        if wastherestall:
+            if (IDRF_prev) > (CLOCK+1):
+                wastherestall = True
+                return [True, False]
+            else:
+                wastherestall = False
+                return [False, False]
+
         if IDRF != [] and IDRF[0] == "addi":
             max_delay = 0
             if RegStatus[IDRF[2]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[2]][0])
+            IDRF_prev = max_delay
             RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1],max(max_delay + 1, (CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
         elif IDRF != [] and IDRF[0] in NormalOperations: 
             if IDRF[0] == "la":
@@ -557,6 +569,7 @@ class S2:
             RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1]+1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
             # if IDRF[0] == "slt":
                 # print(max_delay,CLOCK,IDRF)
+            IDRF_prev = max_delay;
             stall = (True if max_delay > (CLOCK+1) else False) 
             return [stall,False]
         
@@ -574,6 +587,7 @@ class S2:
                 max_delay = 0;
                 if RegStatus[reg][0] > 0:
                     max_delay =  RegStatus[reg][1]
+                IDRF_prev = max_delay
                 stall = (True if max_delay > (CLOCK+1) else False)
                 return [stall,False]
 
@@ -584,6 +598,7 @@ class S2:
             if RegStatus[IDRF[2]][0] > 0:
                 max_delay = max(max_delay, RegStatus[IDRF[2]][1])
             # print(max_delay,IDRF[1],IDRF[2])
+            IDRF_prev = max_delay
             stall = (True if max_delay > (CLOCK+1) else False)
             return [stall,False]
         
@@ -671,7 +686,7 @@ while start==True or WB!=["BYTESPLEASE"]:
     
     IFER.purpose()
     
-    # print(IF,IDRF,EX,MEM,WB)
+    print(IF,IDRF,EX,MEM,WB)
     # print(IF)
     
     stageStatus[0] = False
@@ -679,11 +694,12 @@ while start==True or WB!=["BYTESPLEASE"]:
     isthereastall,isjump=IDRFER.purpose(CLOCK)
     # print(isthereastall)
     stageStatus[1] = False
-    
+    wastherestall = False
     if isjump:        
         IF = []
         IDRF=[]
     elif isthereastall:
+        wastherestall = True
         stageStatus[1] = True
         STALLS += 1
         # print(IDRF)
@@ -718,7 +734,7 @@ stnewinst = []
 [stnewinst.append(x) for x in stinst if x not in stnewinst ]
 
 # print(instruction_count-1,CLOCK-4)
-
+print(instruction_count)
 
 print("{:-^100s}".format("REGISTERS"))
 print()
