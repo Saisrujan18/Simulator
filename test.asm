@@ -4,7 +4,7 @@ array:
 .text 
 .globl main  
 main:
-    add $t0,$t1,$t2
+    addi $t0,$t0,1
     add $t3,$t0,$t2
     beq $t0,$t1,exit
     add $t5,$t6,$t7
