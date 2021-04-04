@@ -676,6 +676,13 @@ insnum = 0
 stinst = []
 
 okayyy = int(input("Enter \'0\' to disable \"FORWARDING\" else Enter \'1\' : "))
+print()
+show= int(input("Enter \'0\' to view \"INSTRUCTIONS\" that are being executed else Enter \'1\' : "))
+print()
+def view(x):
+    if x!=[]:
+        return x[-1]
+    return "   "
 
 while start==True or WB!=["BYTESPLEASE"]:
     isForwardingOn = True if okayyy > 0 else False
@@ -686,7 +693,9 @@ while start==True or WB!=["BYTESPLEASE"]:
     
     IFER.purpose()
     
-    print(IF,IDRF,EX,MEM,WB)
+    if show==0:
+        print("[{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}]".format("IF",view(IF),"IDRF",view(IDRF),"EX",view(EX),"MEM",view(MEM),"WB",view(WB)))
+        # print(IF,IDRF,EX,MEM,WB)
     # print(IF)
     
     stageStatus[0] = False
@@ -734,8 +743,8 @@ stnewinst = []
 [stnewinst.append(x) for x in stinst if x not in stnewinst ]
 
 # print(instruction_count-1,CLOCK-4)
-print(instruction_count)
-
+# print(instruction_count)
+print()
 print("{:-^100s}".format("REGISTERS"))
 print()
 itr=0
@@ -764,7 +773,7 @@ print()
 print("Instruction causing Stalls  :")
 print("\n")
 for i in range(len(stnewinst)):
-    x=" , ".join(stnewinst[i])
+    x=", ".join(stnewinst[i])
     print(x)
     print()
 
