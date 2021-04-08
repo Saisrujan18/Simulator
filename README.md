@@ -58,5 +58,6 @@ __*SneakPeek :*__
    * Number of Stalls
    * Instructions per Cycle
    * List of Instructions which resulted in stalls
+   * __NOTE__: branch instructions and jump instructions donot result in stalls(assuming simple branch predictor).
 
 Run __python start2.py__ in your terminal to execute the program.
