@@ -43,6 +43,8 @@ STALLS,CLOCK=0,0
 
 isForwardingOn=False
 
+LruCounter=0
+
 # 268435456 = 0x10000000
 
 # FEW HELPFULL FUNCTIONS 
@@ -65,6 +67,47 @@ def checkRegister(R):
     return True if R in Registers.keys() else False
 
 # CLASSES FOR EACH INSTRUCTION
+
+def getIndex(address):
+    return 1
+
+
+class block:
+    global LruCounter
+    def __init__(self,number,tag):
+        self.LruIndex=LruCounter
+        LruCounter+=1
+        self.occupied=False
+        self.data=[]
+
+
+class set:
+    def __init(self,number):
+        self.blockers=[block() for i in range(number)]
+        self.index=0
+    def insert(self,address):
+        self.blockers.sort(key = lambda x:x.LruIndex)
+        for i in range(len(self.blockers)):
+            if self.blockers[i].occupied==False:
+                self.blockers[i].insert(address)
+                return
+        self.blockers[i].replace(address)     
+
+
+class cache:
+    def __init__(self,number):
+        self.setters=[set() for i in range(number)]
+    def insert(self,address):
+        whichset=getIndex(address)
+        self.setters[whichset].insert(address)
+
+class Processor:
+    def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,L1latency,L2latency):
+        self.LevelOneCache=cache(numberOfSets)
+        self.LevelTwoCache=cache(numberOfSets)
+    def insert(self):
+        return
+
 
 class add:
     instruction=[]
@@ -520,20 +563,21 @@ class S1:
 
 wastherestall = False
 IDRF_prev = 0
+
 class S2:
+    global IDRF # add $r1,$r2,$r3
+    global Operating
+    global RegStatus
+    global first
+    global PC
+    global wastherestall
+    global IDRF_prev
     def __init__(self):
         print("",end="")
     
     def purpose(self,CLOCK):
         ## to write for j,jal,jr --> done !!
-        global IDRF # add $r1,$r2,$r3
-        global Operating
-        global RegStatus
-        global first
-        global PC
-        global wastherestall
-        global IDRF_prev
-        if wastherestall:
+        if wastherestall is True:
             if (IDRF_prev) > (CLOCK+1):
                 wastherestall = True
                 return [True, False]
@@ -560,7 +604,7 @@ class S2:
             RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1]+1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
             # if IDRF[0] == "slt":
                 # print(max_delay,CLOCK,IDRF)
-            IDRF_prev = max_delay;
+            IDRF_prev = max_delay
             stall = (True if max_delay > (CLOCK+1) else False) 
             return [stall,False]
         
@@ -602,9 +646,10 @@ class S2:
             return [True,True]
         return [False,False]
         
-
-instruction_count = 0;
+instruction_count = 0
 class S3:
+    global EX,PC,STALLS,instruction_count
+    global RegStatus
     ## to write for bne beq and also call for execute
     ## idea -> if true change PC and return to True to stash the current inst
     ## Else continue 
@@ -612,8 +657,6 @@ class S3:
         print("",end="")
     
     def purpose(self,CLOCK):
-        global EX,PC,STALLS,instruction_count
-        global RegStatus
         if EX==[]:
             return []
         whichop=EX[0]
@@ -641,14 +684,15 @@ class S4:
         global RegStatus
         if MEM!=[] and MEM[0] in NormalOperations:
             pass
+    
 class S5:
+    global instruction_count
+    global IDRF
+    global RegStatus
     def __init__(self):
         print("",end="")
     
     def purpose(self,CLOCK):
-        global instruction_count
-        global IDRF
-        global RegStatus
         if WB!= [] and WB[0] in NormalOperations:
             RegStatus[WB[1]] = [max(0,RegStatus[WB[1]][0]-1),CLOCK+1]
         if WB != []:
@@ -735,6 +779,10 @@ stnewinst = []
 
 # print(instruction_count-1,CLOCK-4)
 # print(instruction_count)
+
+
+#################################################################################
+
 print()
 print("{:-^100s}".format("REGISTERS"))
 print()
