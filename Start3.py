@@ -47,6 +47,10 @@ LruCounter=0
 
 # 268435456 = 0x10000000
 
+NumberOfSets=10
+NumberOfBlocks=10
+NumberOf
+
 # FEW HELPFULL FUNCTIONS 
 
 def UpdateReturnAddress():
@@ -74,16 +78,18 @@ def getIndex(address):
 
 class block:
     global LruCounter
-    def __init__(self,number,tag):
+    def __init__(self,number):
         self.LruIndex=LruCounter
         LruCounter+=1
         self.occupied=False
-        self.data=[]
+        self.data=[[] for i in range(number)]
+        self.tag=0
+        self.address=self.tag
 
 
 class set:
-    def __init(self,number):
-        self.blockers=[block() for i in range(number)]
+    def __init(self,numberofBlocks,numberOfdata):
+        self.blockers=[block(numberOfdata) for i in range(numberofBlocks)]
         self.index=0
     def insert(self,address):
         self.blockers.sort(key = lambda x:x.LruIndex)
@@ -92,21 +98,73 @@ class set:
                 self.blockers[i].insert(address)
                 return
         self.blockers[i].replace(address)     
+    
+    def getLRUBlock(address):
+        return
+
 
 
 class cache:
-    def __init__(self,number):
-        self.setters=[set() for i in range(number)]
+
+    def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,laten):
+        self.setters=[set(numberOfblocks,numberofDataElements) for i in range(numberOfSets)]
+        self.latency=laten
+        self.howManySets=numberOfSets
+
+
     def insert(self,address):
         whichset=getIndex(address)
         self.setters[whichset].insert(address)
 
-class Processor:
-    def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,L1latency,L2latency):
-        self.LevelOneCache=cache(numberOfSets)
-        self.LevelTwoCache=cache(numberOfSets)
-    def insert(self):
+    def space(self,address):
+        # Search in that particular set to which it belongs to
+        whichset=getIndex(address)
+        return self.setters[whichset].isOccupied()
+    
+    def performLRU(self,address):
+        whichset=getIndex(address)
+        # for i in range(self.setters[whichset].blockers):
+        return self.setters[whichset].LRUinsert(address)
+
+    def spaceforBlock(self,x):
         return
+
+
+
+class Processor:
+
+    def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,L1latency,L2latency):
+        self.LevelOneCache=cache(numberOfSets,numberOfblocks,numberofDataElements,L1latency)
+        self.LevelTwoCache=cache(numberOfSets,2*numberOfblocks,numberofDataElements,L2latency)
+    
+    def insert(self,address):
+        # Insert to L1 
+        # returns true or false ...
+        # if true adds it to L2
+        # else nothing
+        # same with L2
+        isThereSpace=self.LevelOneCache.space(address)
+        if isThereSpace==True:
+            self.LevelOneCache.insert(address)
+        else:
+            NewBlock=self.LevelOneCache.performLRU(address)
+            isThereSpace=self.LevelTwoCache.spaceforBlock(NewBlock)
+            if isThereSpace==True:
+                self.LevelTwoCache.blockInsert(NewBlock)
+            else:
+                NewBlock=self.LevelTwoCache.performLRUB(NewBlock)
+                WriteToMemory(NewBlock)
+    
+    def search(self,address):
+        itsThere=self.LevelOneCache.search(address)
+        if itsThere==True:
+            return
+        self.LevelOneCache.insert(address)
+        itsThere=self.LevelTwoCache.search(address)
+        if itsThere==True:
+            return
+        else:
+            return
 
 
 class add:
@@ -817,3 +875,24 @@ for i in range(len(stnewinst)):
     print()
 
 print("{:-^100s}".format(""))
+
+
+
+
+#include <bits/stdc++.h>
+using namespace std;
+int main()
+{
+    int n,x;cin>>n>>x;
+    int cur(1);
+    int ans = 0;
+    for (int i = 0; i < n; i++)
+    {
+        int a,b;cin>>a>>b;
+        while (cur + x<=a)cur+=x;
+        ans+=b-cur+1;
+        cur=b+1;
+    }
+    cout<<ans<<endl;
+    return 0;
+}
