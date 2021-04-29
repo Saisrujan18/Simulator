@@ -5,6 +5,7 @@ from collections import OrderedDict
 import re
 import sys
 import copy
+import math
 
 # ELEPHANT IN THE ROOM
 
@@ -47,9 +48,38 @@ LruCounter=0
 
 # 268435456 = 0x10000000
 
-NumberOfSets=10
-NumberOfBlocks=10
-NumberOf
+NumberOfSets=0
+NumberOfBlocks=0
+NumberOfElements=0
+CacheOneLatency=0
+CahceTwoLatency=0
+MainMemoryLatency=0
+
+with open("CacheInput") as f:
+    CacheInput= f.readlines()
+
+CacheOneLatency=int(CacheInput[-3])
+CacheTwoLatency=int(CacheInput[-2])
+MainMemoryLatency=int(CacheInput[-1])
+NumberOfBlocks=int(CacheInput[-4])
+
+NumberOfElements=int(CacheInput[1])//4 
+NumberOfSets=int(CacheInput[0])//(NumberOfBlocks*int(CacheInput[1]))
+
+# print(NumberOfBlocks,NumberOfElements,NumberOfSets)
+
+
+offsetBits=int(math.log(NumberOfElements,2))
+indexBits=int(math.log(NumberOfSets,2))
+
+NumberOfElements=2**offsetBits
+NumberOfSets=2**indexBits
+
+HitsCacheOne=0
+TotalCacheOne=0
+HitsCacheTwo=0
+TotalCacheTwo=0
+
 
 # FEW HELPFULL FUNCTIONS 
 
@@ -73,98 +103,143 @@ def checkRegister(R):
 # CLASSES FOR EACH INSTRUCTION
 
 def getIndex(address):
-    return 1
+    temp=address>>(offsetBits+2)
+    answer=temp%(2**indexBits) 
+    # print(address,answer)
+    return answer
+
+def BaseAddress(address):
+    temp=address>>(offsetBits+2)
+    return temp<<(offsetBits+2)
 
 
 class block:
-    global LruCounter
-    def __init__(self,number):
-        self.LruIndex=LruCounter
-        LruCounter+=1
+    LruIndex=0
+    blocksize=0
+    data=[]
+    def __init__(self,noe):
+        self.LruIndex=0
         self.occupied=False
-        self.data=[[] for i in range(number)]
-        self.tag=0
-        self.address=self.tag
+        self.blocksize=noe
+        self.baseAddress=-1
+    
+    def insert(self,address):
+        global LruCounter
+        self.LruIndex=LruCounter+1
+        LruCounter+=1
+        base=BaseAddress(address)
+        self.baseAddress=base
+        for i in range(self.blocksize):
+            self.data.append([base+i*0,Memory[base+i*0]])
+    
+    def replace(self,address):
+        global LruCounter
+        self.LruIndex=LruCounter+1
+        LruCounter+=1
+        newaddress=self.data[0][0]
+        base=BaseAddress(address)
+        self.baseAddress=base
+        for i in range(self.blocksize):
+            self.data.append([base+i*0,Memory[base+i*0]])
+        return newaddress
 
+    def search(self,address):
+        if len(self.data)==0:
+            return False
+        bamse=BaseAddress(address)
+        for i in range(self.blocksize):
+            if self.data[i][0]==bamse:
+                return True
+        return False
+    
+    def update(self):
+        global LruCounter
+        self.LruIndex=LruCounter+1
+        LruCounter+=1
 
 class set:
-    def __init(self,numberofBlocks,numberOfdata):
+    def __init__(self,numberofBlocks,numberOfdata,unique):
         self.blockers=[block(numberOfdata) for i in range(numberofBlocks)]
-        self.index=0
+        self.index=unique
+    
     def insert(self,address):
-        self.blockers.sort(key = lambda x:x.LruIndex)
+        temp=self.isAnyOneFree()
+        if temp==-1:
+            # all are occupied
+            self.blockers.sort(key = lambda x:x.LruIndex)
+            newaddress=self.blockers[0].replace(address)
+            return newaddress
+        self.blockers[temp].insert(address)
+        return -1
+    
+    def isAnyOneFree(self):
         for i in range(len(self.blockers)):
             if self.blockers[i].occupied==False:
-                self.blockers[i].insert(address)
-                return
-        self.blockers[i].replace(address)     
-    
-    def getLRUBlock(address):
-        return
+                return i
+        return -1
 
+    def search(self,address):
+        for i in range(len(self.blockers)):
+            if self.blockers[i].search(address)==True:
+                return True
+        return False
 
+    def update(self,address):
+        base=BaseAddress(address)
+        for i in range(len(self.blockers)):
+            if self.blockers[i].baseAddress==base:
+                self.blockers[i].update()
+                break
 
 class cache:
 
     def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,laten):
-        self.setters=[set(numberOfblocks,numberofDataElements) for i in range(numberOfSets)]
+        self.setters=[set(numberOfblocks,numberofDataElements,i) for i in range(numberOfSets)]
         self.latency=laten
-        self.howManySets=numberOfSets
-
 
     def insert(self,address):
         whichset=getIndex(address)
-        self.setters[whichset].insert(address)
+        return self.setters[whichset].insert(address)
 
-    def space(self,address):
-        # Search in that particular set to which it belongs to
+    def search(self,address):
         whichset=getIndex(address)
-        return self.setters[whichset].isOccupied()
-    
-    def performLRU(self,address):
+        return self.setters[whichset].search(address)   
+
+    def update(self,address):
         whichset=getIndex(address)
-        # for i in range(self.setters[whichset].blockers):
-        return self.setters[whichset].LRUinsert(address)
-
-    def spaceforBlock(self,x):
-        return
-
-
+        self.setters[whichset].update(address)   
 
 class Processor:
 
     def __init__(self,numberOfSets,numberOfblocks,numberofDataElements,L1latency,L2latency):
         self.LevelOneCache=cache(numberOfSets,numberOfblocks,numberofDataElements,L1latency)
         self.LevelTwoCache=cache(numberOfSets,2*numberOfblocks,numberofDataElements,L2latency)
-    
-    def insert(self,address):
-        # Insert to L1 
-        # returns true or false ...
-        # if true adds it to L2
-        # else nothing
-        # same with L2
-        isThereSpace=self.LevelOneCache.space(address)
-        if isThereSpace==True:
-            self.LevelOneCache.insert(address)
-        else:
-            NewBlock=self.LevelOneCache.performLRU(address)
-            isThereSpace=self.LevelTwoCache.spaceforBlock(NewBlock)
-            if isThereSpace==True:
-                self.LevelTwoCache.blockInsert(NewBlock)
-            else:
-                NewBlock=self.LevelTwoCache.performLRUB(NewBlock)
-                WriteToMemory(NewBlock)
-    
-    def search(self,address):
-        itsThere=self.LevelOneCache.search(address)
-        if itsThere==True:
-            return
-        self.LevelOneCache.insert(address)
-        itsThere=self.LevelTwoCache.search(address)
-        if itsThere==True:
-            return
-        else:
-            return
+   
+    def process(self,address):
+        global TotalCacheOne,TotalCacheTwo,HitsCacheOne,HitsCacheTwo
+        TotalCacheOne+=1
+        # print(address,BaseAddress(address))
+        if self.LevelOneCache.search(address)==True:
+            HitsCacheOne+=1
+            self.LevelOneCache.update(address)
+            return self.LevelOneCache.latency
+        TotalCacheTwo+=1
+        if self.LevelTwoCache.search(address)==True:
+            HitsCacheTwo+=1
+            # print("l2",address,BaseAddress(address))
+            newaddress=self.LevelOneCache.insert(address)
+            if newaddress!=-1:
+                # indication to add to L2
+                random=self.LevelTwoCache.insert(newaddress)
+            return self.LevelOneCache.latency+self.LevelTwoCache.latency
+        
+        newaddress=self.LevelOneCache.insert(address)
+        if newaddress!=-1:
+            # indication to add to L2
+            random=self.LevelTwoCache.insert(newaddress)
+        return self.LevelOneCache.latency+self.LevelTwoCache.latency+MainMemoryLatency
+
+Intel=Processor(NumberOfSets,NumberOfBlocks,NumberOfElements,CacheOneLatency,CacheTwoLatency)
 
 
 class add:
@@ -334,7 +409,10 @@ class lw:
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Registers[self.instructions[1]]=Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]
+        requiredAddress=(offset//4)*4 +Registers[self.instructions[-1]]
+        Registers[self.instructions[1]]=Memory[ requiredAddress ]
+        # print(requiredAddress)
+        return Intel.process(requiredAddress)
 
 class sw:
     instructions=[]
@@ -353,7 +431,9 @@ class sw:
         self.instructions[-1]=self.instructions[-1][whereisdollar:]
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
-        Memory[ (offset//4)*4 +Registers[self.instructions[-1]] ]=Registers[self.instructions[1]]
+        requiredAddress= (offset//4)*4 +Registers[self.instructions[-1]] 
+        Memory[requiredAddress]=Registers[self.instructions[1]]
+        return Intel.process(requiredAddress)
 
 class jal:
     instruction=[]
@@ -623,17 +703,17 @@ wastherestall = False
 IDRF_prev = 0
 
 class S2:
-    global IDRF # add $r1,$r2,$r3
-    global Operating
-    global RegStatus
-    global first
-    global PC
-    global wastherestall
-    global IDRF_prev
     def __init__(self):
         print("",end="")
     
     def purpose(self,CLOCK):
+        global IDRF # add $r1,$r2,$r3
+        global Operating
+        global RegStatus
+        global first
+        global PC
+        global wastherestall
+        global IDRF_prev
         ## to write for j,jal,jr --> done !!
         if wastherestall is True:
             if (IDRF_prev) > (CLOCK+1):
@@ -706,8 +786,7 @@ class S2:
         
 instruction_count = 0
 class S3:
-    global EX,PC,STALLS,instruction_count
-    global RegStatus
+  
     ## to write for bne beq and also call for execute
     ## idea -> if true change PC and return to True to stash the current inst
     ## Else continue 
@@ -715,6 +794,8 @@ class S3:
         print("",end="")
     
     def purpose(self,CLOCK):
+        global EX,PC,STALLS,instruction_count
+        global RegStatus
         if EX==[]:
             return []
         whichop=EX[0]
@@ -744,13 +825,13 @@ class S4:
             pass
     
 class S5:
-    global instruction_count
-    global IDRF
-    global RegStatus
     def __init__(self):
         print("",end="")
     
     def purpose(self,CLOCK):
+        global instruction_count
+        global IDRF
+        global RegStatus
         if WB!= [] and WB[0] in NormalOperations:
             RegStatus[WB[1]] = [max(0,RegStatus[WB[1]][0]-1),CLOCK+1]
         if WB != []:
@@ -876,23 +957,5 @@ for i in range(len(stnewinst)):
 
 print("{:-^100s}".format(""))
 
-
-
-
-#include <bits/stdc++.h>
-using namespace std;
-int main()
-{
-    int n,x;cin>>n>>x;
-    int cur(1);
-    int ans = 0;
-    for (int i = 0; i < n; i++)
-    {
-        int a,b;cin>>a>>b;
-        while (cur + x<=a)cur+=x;
-        ans+=b-cur+1;
-        cur=b+1;
-    }
-    cout<<ans<<endl;
-    return 0;
-}
+# print(HitsCacheOne,TotalCacheOne)
+# print(HitsCacheTwo,TotalCacheTwo)
