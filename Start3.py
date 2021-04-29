@@ -118,6 +118,7 @@ class block:
     blocksize=0
     data=[]
     def __init__(self,noe):
+        # print(noe)
         self.LruIndex=0
         self.occupied=False
         self.blocksize=noe
@@ -129,8 +130,9 @@ class block:
         LruCounter+=1
         base=BaseAddress(address)
         self.baseAddress=base
+        self.data=[]
         for i in range(self.blocksize):
-            self.data.append([base+i*0,Memory[base+i*0]])
+            self.data.append(base+i*4)
     
     def replace(self,address):
         global LruCounter
@@ -139,19 +141,19 @@ class block:
         newaddress=self.data[0][0]
         base=BaseAddress(address)
         self.baseAddress=base
+        self.data=[]
         for i in range(self.blocksize):
-            self.data.append([base+i*0,Memory[base+i*0]])
+            self.data.append(base+i*4)
         return newaddress
 
     def search(self,address):
         if len(self.data)==0:
             return False
         bamse=BaseAddress(address)
-        for i in range(self.blocksize):
-            if self.data[i][0]==bamse:
-                return True
+        if self.data[0]==bamse:
+            return True
         return False
-    
+
     def update(self):
         global LruCounter
         self.LruIndex=LruCounter+1
@@ -916,6 +918,14 @@ while start==True or WB!=["BYTESPLEASE"]:
 stnewinst = []
 [stnewinst.append(x) for x in stinst if x not in stnewinst ]
 
+
+# for i in range(NumberOfSets):
+#     for j in range(NumberOfBlocks):
+#         print()
+#         print(len(Intel.LevelOneCache.setters[i].blockers[j].data))
+#         print()
+#         print(Intel.LevelOneCache.setters[i].blockers[j].data)
+
 # print(instruction_count-1,CLOCK-4)
 # print(instruction_count)
 
@@ -957,5 +967,7 @@ for i in range(len(stnewinst)):
 
 print("{:-^100s}".format(""))
 
+
 # print(HitsCacheOne,TotalCacheOne)
+
 # print(HitsCacheTwo,TotalCacheTwo)
