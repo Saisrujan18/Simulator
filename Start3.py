@@ -241,6 +241,7 @@ class Processor:
             random=self.LevelTwoCache.insert(newaddress)
         return self.LevelOneCache.latency+self.LevelTwoCache.latency+MainMemoryLatency
 
+
 Intel=Processor(NumberOfSets,NumberOfBlocks,NumberOfElements,CacheOneLatency,CacheTwoLatency)
 
 
@@ -412,11 +413,13 @@ class lw:
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         requiredAddress=(offset//4)*4 +Registers[self.instructions[-1]]
-        print(self.instructions,offset)
+        # print(self.instructions,offset)
+        print(Registers[self.instructions[1]])
         Registers[self.instructions[1]]=Memory[ requiredAddress ]
+        print(Registers[self.instructions[1]])
         # print(requiredAddress)
         latennn = (Intel.process(requiredAddress))
-        print("latennn :",latennn)
+        # print("latennn :",latennn)
         return latennn
 
 class sw:
@@ -696,7 +699,7 @@ RegStatus={"$s0":0,"$s1":0,"$s2":0,"$s3":0,
             "$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t1":0,
             "$t0":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,
             "$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,
-            "$a1e":0,"$a1":0,"$a2":0,"$a3":0,"$v1":0,
+            "$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,
             "$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,
             "$at":0,"$k1":0,"$k1":0}
 
@@ -712,8 +715,8 @@ def isUpdated(register):
 
 def setStatus(register, status):
     global RegStatus
+    
     RegStatus[register] += status
-
 
 def isStageAval(stage):
     global stageStatus
@@ -731,67 +734,75 @@ def addStall(inc):
 Mem_stalls = 0
 CPC = -1
 
-while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
+while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
     jump = -1
     printing = []
     if WB != []:
-        if not isForwardingOn and (WB[0] in NormalOperations or WB[0] in MemoryRelated):
-            setStatus(WB[1],-1)
+        if not isForwardingOn and (WB[0]!="la" and (WB[0] in NormalOperations or WB[0] in MemoryRelated)):
+            if(WB[0]!="sw"):
+                setStatus(WB[1],-1)  
     printing.append(WB)
-    
+
+
     if MEM != []:
         if Mem_stalls > 0:
-            setStageStatus(3,0)
             Mem_stalls -= 1
             if Mem_stalls == 0:
                 if isForwardingOn:
                     setStatus(MEM[1],-1)
-            if isStageAval(4):
+            elif isStageAval(4):
                 WB = []
         else:
-            if MEM[0] not in MemoryRelated:
-                setStageStatus(3,1)
+            if not isStageAval(3):
                 WB = copy.deepcopy(MEM)
+                setStageStatus(3,True)
             else:
-                direct.__init__(MEM[:-1],MEM[-1])       ## MEM ACCESS
-                print(MEM)
-                get_stalls = direct.makeWay()
-                setStatus(MEM[1],1)                       ## Reserving the register for x CCycles.
-                print(get_stalls)
-                setStageStatus(3,0)
+                if MEM[0] not in MemoryRelated:
+                    setStageStatus(3,True)
+                    WB = copy.deepcopy(MEM)
+                else:
+                    direct.__init__(MEM[:-1],MEM[-1])       ## MEM ACCESS
+                    Mem_stalls = direct.makeWay()
+                    print("MEMSTALL :", Mem_stalls)
+                    if Mem_stalls > 0:
+                        setStageStatus(3,False)
+                        WB = []
+                    else:
+                        WB = copy.deepcopy(MEM)
     else:
         WB = []    
     printing.append(MEM)
-    
+
+
     if EX != []:
         if EX[0] in ComparisonOperations:
-            # instruction_count += 1
             direct.__init__(EX[:-1],EX[-1]) 
             C = direct.makeWay()
-            # print("C : EX",C, EX[-1])
             if C == (EX[-1]+1):
+                MEM = copy.deepcopy(EX)
+                setStageStatus(2, True)
                 pass
             else:
                 CPC = C
                 jump = 2
                 if isStageAval(3):
                     MEM = [] 
-        if jump != 2:
-            if isStageAval(2):
-                # call for execution
+        elif isStageAval(2):
+            # call for execution
+            if EX[0] not in MemoryRelated:
                 direct.__init__(EX[:-1],EX[-1]) 
                 direct.makeWay()
-                if isForwardingOn:
-                    if EX[0] in NormalOperations:
-                            setStatus(EX[1],-1)
-                if EX[0] == "la":
-                    setStatus(EX[1],-1)
-                if isStageAval(3):
-                    setStageStatus(2,True)
-                    MEM = copy.deepcopy(EX)
-                else:
-                    setStageStatus(2,False)
+            if EX[0] == "la":
+                setStatus(EX[1], -1)
+            if isForwardingOn:
+                if EX[0]!="la" and (EX[0] in NormalOperations):
+                        setStatus(EX[1],-1)
+            if isStageAval(3):
+                setStageStatus(2,True)
+                MEM = copy.deepcopy(EX)
             else:
+                setStageStatus(2,False)
+        else:
                 if isStageAval(3):
                     setStageStatus(2,True)
                     MEM = copy.deepcopy(EX)
@@ -801,6 +812,7 @@ while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
         if isStageAval(3):
             MEM = []
     printing.append(EX)
+
 
     if IDRF != []:
         if IDRF[0] in NonComparisionJumps:
@@ -812,7 +824,7 @@ while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
             setStageStatus(1,False)
             if isStageAval(2):
                 EX = []
-        if jump != 1:
+        if jump == -1:
             if isStageAval(2):
                 if IDRF[0] == "addi":
                     if isUpdated(IDRF[2]):
@@ -850,25 +862,28 @@ while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
                     if IDRF[0] == "sw":
                         reg = IDRF[-2].find('$')
                         reg = IDRF[-2][reg:-1]
-                        if isUpdated(reg) and isUpdated(IRDF[1]):
+                        if isUpdated(reg) and isUpdated(IDRF[1]):
+                            # setStatus(IDRF[1],1)
                             setStageStatus(1,True)
                             EX = copy.deepcopy(IDRF)
                         else:
                             EX = []
                             setStageStatus(1,False)
                 elif IDRF[0] in ComparisonOperations:
-                    if isUpdated(IDRF[2]) and isUpdated(IDRF[2]):
+                    if isUpdated(IDRF[1]) and isUpdated(IDRF[2]):
                         setStageStatus(1,True)
-                        setStatus(IDRF[1],1)
                         EX = copy.deepcopy(IDRF)
                     else:
                         EX = []
                         setStageStatus(1,False)
+            else:
+                setStageStatus(1, False)
     else:
         if isStageAval(2):
             EX = []
     printing.append(IDRF)
     
+
     if IF != [] or start:
         if isStageAval(0):
             if PC == len(Instructions):
@@ -880,11 +895,6 @@ while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
             IDRF = copy.deepcopy(IF)
             if not isStageAval(0):
                 setStageStatus(0,True)
-                # if PC == len(Instructions):
-                #     IF = []
-                # else:
-                #     IF = copy.deepcopy(Instructions[PC])
-                #     PC += 1
         else:
             setStageStatus(0,False)
     else:
@@ -893,14 +903,15 @@ while start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]:
     printing.append(IF)
 
     for i in range(len(printing)-1,-1,-1):
-        print(printing[i],end=" ");
+        # if printing[i]!= []:
+            print(printing[i],end=" ");
     print()
 
     start = False
     cnt += 1
     if jump == 1:
-        setStageStatus(2,True)
-        setStageStatus(1,True)
+        setStageStatus(1,True)  
+        setStageStatus(0,True)
         IDRF = []
         jump = -1
         PC = CPC

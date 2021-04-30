@@ -612,7 +612,7 @@ class S2:
         return [False,False]
         
 
-#instruction_count = 0;
+instruction_count = 0
 class S3:
     ## to write for bne beq and also call for execute
     ## idea -> if true change PC and return to True to stash the current inst
@@ -630,7 +630,7 @@ class S3:
             direct.__init__(EX[:-1],0)
             direct.makeWay()
         elif whichop in ComparisonOperations:
-            #instruction_count += 1
+            instruction_count += 1
             direct.__init__(EX[:-1],EX[-1])
             C=direct.makeWay()
             # print(C,"njerer")
