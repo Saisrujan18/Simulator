@@ -612,7 +612,7 @@ class S2:
         return [False,False]
         
 
-instruction_count = 0;
+instruction_count = 0
 class S3:
     ## to write for bne beq and also call for execute
     ## idea -> if true change PC and return to True to stash the current inst

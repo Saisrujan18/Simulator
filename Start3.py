@@ -1,4 +1,3 @@
-
 # IMPORTING ALL THE LIBRARIES
 from collections import OrderedDict
 
@@ -21,7 +20,7 @@ NonComparisionJumps=["j",'jal','jr']
 
 jumpRelated=["j","beq","bne","jal","jr"]
 
-MemoryRelated=["lw","sw","la"]
+MemoryRelated=["lw","sw"]
 
 
 Registers={"$zero":0,"$at":0,"$v0":0,"$v1":0,"$a0":0,"$a1":0,"$a2":0,"$a3":0,"$t0":0,"$t1":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,"$t6":0,"$t7":0,"$s0":0,"$s1":0,"$s2":0,"$s3":0,"$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t8":0,"$t9":0,"$k0":0,"$k1":1,"$gp":0,"$sp":0,"$s8":0,"$ra":0}
@@ -66,9 +65,6 @@ NumberOfBlocks=int(CacheInput[-4])
 NumberOfElements=int(CacheInput[1])//4 
 NumberOfSets=int(CacheInput[0])//(NumberOfBlocks*int(CacheInput[1]))
 
-# print(NumberOfBlocks,NumberOfElements,NumberOfSets)
-
-
 offsetBits=int(math.log(NumberOfElements,2))
 indexBits=int(math.log(NumberOfSets,2))
 
@@ -100,8 +96,6 @@ def AddToMemory(ins):
 def checkRegister(R):
     return True if R in Registers.keys() else False
 
-# CLASSES FOR EACH INSTRUCTION
-
 def getIndex(address):
     temp=address>>(offsetBits+2)
     answer=temp%(2**indexBits) 
@@ -112,13 +106,12 @@ def BaseAddress(address):
     temp=address>>(offsetBits+2)
     return temp<<(offsetBits+2)
 
+# CLASSES FOR EACH INSTRUCTION
 
 class block:
     LruIndex=0
     blocksize=0
-    data=[]
     def __init__(self,noe):
-        # print(noe)
         self.LruIndex=0
         self.occupied=False
         self.blocksize=noe
@@ -130,27 +123,19 @@ class block:
         LruCounter+=1
         base=BaseAddress(address)
         self.baseAddress=base
-        self.data=[]
-        for i in range(self.blocksize):
-            self.data.append(base+i*4)
     
     def replace(self,address):
         global LruCounter
         self.LruIndex=LruCounter+1
         LruCounter+=1
-        newaddress=self.data[0][0]
-        base=BaseAddress(address)
-        self.baseAddress=base
-        self.data=[]
-        for i in range(self.blocksize):
-            self.data.append(base+i*4)
+        newaddress=self.baseAddress
+        self.baseAddress=BaseAddress(address)
         return newaddress
 
     def search(self,address):
-        if len(self.data)==0:
+        if self.baseAddress==-1:
             return False
-        bamse=BaseAddress(address)
-        if self.data[0]==bamse:
+        if self.baseAddress==address:
             return True
         return False
 
@@ -205,6 +190,7 @@ class cache:
 
     def search(self,address):
         whichset=getIndex(address)
+        # print(whichset)
         return self.setters[whichset].search(address)   
 
     def update(self,address):
@@ -218,9 +204,9 @@ class Processor:
         self.LevelTwoCache=cache(numberOfSets,2*numberOfblocks,numberofDataElements,L2latency)
    
     def process(self,address):
+        address=BaseAddress(address)
         global TotalCacheOne,TotalCacheTwo,HitsCacheOne,HitsCacheTwo
         TotalCacheOne+=1
-        # print(address,BaseAddress(address))
         if self.LevelOneCache.search(address)==True:
             HitsCacheOne+=1
             self.LevelOneCache.update(address)
@@ -412,9 +398,14 @@ class lw:
         if checkRegister(self.instructions[-1])==False:
             sys.exit()
         requiredAddress=(offset//4)*4 +Registers[self.instructions[-1]]
+        # print(self.instructions,offset)
+        # print(Registers[self.instructions[1]])
         Registers[self.instructions[1]]=Memory[ requiredAddress ]
+        # print(Registers[self.instructions[1]])
         # print(requiredAddress)
-        return Intel.process(requiredAddress)
+        latennn = (Intel.process(requiredAddress))
+        # print("latennn :",latennn)
+        return latennn
 
 class sw:
     instructions=[]
@@ -531,10 +522,10 @@ class control:
             return self.jer.check()
         elif operation=="lw":
             self.lwer.__init__(self.current)
-            self.lwer.check()
+            return self.lwer.check()
         elif operation=="sw":
             self.swer.__init__(self.current)
-            self.swer.check()
+            return self.swer.check()
         elif operation=="slt":
             self.slter.__init__(self.current)
             self.slter.check()
@@ -669,254 +660,259 @@ for i in range(len(Instructions)):
     Instructions[i].append(i)
 
 
-#   HEART OF THE SIMULATOR
-#   GUI USING CONSOLE
-
 # PHASE 2 SPECIAL FUNCTIONS
 PC=InstructionsStartFrom
 Operating={}
 # print(Instructions)
 
-RegStatus={"$s0":[0,0],"$s1":[0,0],"$s2":[0,0],"$s3":[0,0],
-            "$s4":[0,0],"$s5":[0,0],"$s6":[0,0],"$s7":[0,0],"$t0":[0,0],
-            "$t1":[0,0],"$t2":[0,0],"$t3":[0,0],"$t4":[0,0],"$t5":[0,0],
-            "$t6":[0,0],"$t7":[0,0],"$t8":[0,0],"$t9":[0,0],"$zero":[0,0],
-            "$a0":[0,0],"$a1":[0,0],"$a2":[0,0],"$a3":[0,0],"$v0":[0,0],
-            "$v1":[0,0],"$gp":[0,0],"$fp":[0,0],"$sp":[0,0],"$ra":[0,0],
-            "$at":[0,0],"$k0":[0,0],"$k1":1}
+IF = []
+IDRF = []
+EX = []
+MEM = []
+WB = []
 
-stageStatus = [False,False,False,False,False]
+# Following are declarations are related to phase II.
+# For each stage we have a container which holds the instruction.
+# The Following loop mimics each clock cycle.
+# We give a reserved status to some register which helps to deal with stalling.
+# A register can be reserved when its value is still not updated either due to a memory operation
+# or due to some pending computation or pending WB or due to some already reserved resgister.
+# To show a stall we pass on a null container to that stage.
 
-class S1:
-    def __init__(self):
-        print("",end="")
+
+RegStatus={"$s0":0,"$s1":0,"$s2":0,"$s3":0,
+            "$s4":0,"$s5":0,"$s6":0,"$s7":0,"$t1":0,
+            "$t0":0,"$t2":0,"$t3":0,"$t4":0,"$t5":0,
+            "$t6":0,"$t7":0,"$t8":0,"$t9":0,"$zero":0,
+            "$a0":0,"$a1":0,"$a2":0,"$a3":0,"$v0":0,
+            "$v1":0,"$gp":0,"$fp":0,"$sp":0,"$ra":0,
+            "$at":0,"$k1":0,"$k1":0}
+
+stageStatus = [True, True, True, True, True]
+
+start = True
+cnt = 0
+
+
+def isUpdated(register):
+    global RegStatus
+    return (RegStatus[register] == 0)
+
+def setStatus(register, status):
+    global RegStatus
     
-    def purpose(self):
-        global IF,PC,Instructions
-        if stageStatus[1] == False:
-            if PC==len(Instructions):
-                IF=[]
+    RegStatus[register] += status
+
+def isStageAval(stage):
+    global stageStatus
+    return stageStatus[stage] or (stageStatus[stage] > 0) 
+
+def setStageStatus(stage, status):
+    global stageStatus
+    stageStatus[stage] = status
+
+def addStall(inc):
+    global STALLS
+    STALLS += inc
+
+
+Mem_stalls = 0
+CPC = -1
+
+while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
+    jump = -1
+    printing = []
+    if WB != []:
+        if not isForwardingOn and (WB[0]!="la" and (WB[0] in NormalOperations or WB[0] in MemoryRelated)):
+            if(WB[0]!="sw"):
+                setStatus(WB[1],-1)  
+    printing.append(WB)
+
+
+    if MEM != []:
+        if Mem_stalls > 0:
+            Mem_stalls -= 1
+            if Mem_stalls == 0:
+                if isForwardingOn:
+                    setStatus(MEM[1],-1)
+            elif isStageAval(4):
+                WB = []
+        else:
+            if not isStageAval(3):
+                WB = copy.deepcopy(MEM)
+                setStageStatus(3,True)
             else:
-                IF=copy.deepcopy(Instructions[PC])
-                PC+=1
-        return False
+                if MEM[0] not in MemoryRelated:
+                    setStageStatus(3,True)
+                    WB = copy.deepcopy(MEM)
+                else:
+                    direct.__init__(MEM[:-1],MEM[-1])       ## MEM ACCESS
+                    Mem_stalls = direct.makeWay()
+                    # print("MEMSTALL :", Mem_stalls)
+                    if Mem_stalls > 0:
+                        setStageStatus(3,False)
+                        WB = []
+                    else:
+                        WB = copy.deepcopy(MEM)
+    else:
+        WB = []    
+    printing.append(MEM)
 
-wastherestall = False
-IDRF_prev = 0
 
-class S2:
-    def __init__(self):
-        print("",end="")
-    
-    def purpose(self,CLOCK):
-        global IDRF # add $r1,$r2,$r3
-        global Operating
-        global RegStatus
-        global first
-        global PC
-        global wastherestall
-        global IDRF_prev
-        ## to write for j,jal,jr --> done !!
-        if wastherestall is True:
-            if (IDRF_prev) > (CLOCK+1):
-                wastherestall = True
-                return [True, False]
-            else:
-                wastherestall = False
-                return [False, False]
-
-        if IDRF != [] and IDRF[0] == "addi":
-            max_delay = 0
-            if RegStatus[IDRF[2]][0] > 0:
-                max_delay = max(max_delay, RegStatus[IDRF[2]][0])
-            IDRF_prev = max_delay
-            RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1],max(max_delay + 1, (CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
-        elif IDRF != [] and IDRF[0] in NormalOperations: 
-            if IDRF[0] == "la":
-                RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][1]+1,CLOCK+3 + (0 if isForwardingOn else 1)]
-                return [False,False]
-            max_delay = 0
-            if RegStatus[IDRF[2]][0] > 0:
-                max_delay = max(max_delay, RegStatus[IDRF[2]][1])
-
-            if RegStatus[IDRF[3]][0] > 0:
-                max_delay = max(max_delay, RegStatus[IDRF[3]][1])
-            RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[IDRF[1]][1]+1,max(max_delay + 1,(CLOCK + 2) if isForwardingOn else (CLOCK+4)))]
-            # if IDRF[0] == "slt":
-                # print(max_delay,CLOCK,IDRF)
-            IDRF_prev = max_delay
-            stall = (True if max_delay > (CLOCK+1) else False) 
-            return [stall,False]
-        
-        elif IDRF!= [] and IDRF[0] in MemoryRelated:
-            if IDRF[0] == "lw":
-                reg = IDRF[-2].find('$')
-                reg = IDRF[-2][reg:-1]
-                RegStatus[IDRF[1]] = [RegStatus[IDRF[1]][0]+1,max(RegStatus[reg][1]+1,CLOCK + 3 + (0 if isForwardingOn else 1))]
-                # print(RegStatus[IDRF[1]],CLOCK)
-            if IDRF[0] == "sw":
-                # print(IDRF)
-                reg = IDRF[-2].find('$')
-                reg = IDRF[-2][reg:-1]
-                # reg = "$t1"
-                max_delay = 0;
-                if RegStatus[reg][0] > 0:
-                    max_delay =  RegStatus[reg][1]
-                IDRF_prev = max_delay
-                stall = (True if max_delay > (CLOCK+1) else False)
-                return [stall,False]
-
-        elif IDRF!=[] and IDRF[0] in ComparisonOperations:
-            max_delay = 0
-            if RegStatus[IDRF[1]][0] > 0:
-                max_delay = max(max_delay, RegStatus[IDRF[1]][1])
-            if RegStatus[IDRF[2]][0] > 0:
-                max_delay = max(max_delay, RegStatus[IDRF[2]][1])
-            # print(max_delay,IDRF[1],IDRF[2])
-            IDRF_prev = max_delay
-            stall = (True if max_delay > (CLOCK+1) else False)
-            return [stall,False]
-        
-        elif IDRF!=[] and IDRF[0] in jumpRelated:
-            if IDRF[0] == "jr":
-                PC = Registers["$ra"]
-                # if PC > len(Instructions)
-            else:
-                PC = Loops[IDRF[1]]
-            return [True,True]
-        return [False,False]
-        
-instruction_count = 0
-class S3:
-  
-    ## to write for bne beq and also call for execute
-    ## idea -> if true change PC and return to True to stash the current inst
-    ## Else continue 
-    def __init__(self):
-        print("",end="")
-    
-    def purpose(self,CLOCK):
-        global EX,PC,STALLS,instruction_count
-        global RegStatus
-        if EX==[]:
-            return []
-        whichop=EX[0]
-        if whichop in NormalOperations or whichop in MemoryRelated:
-            direct.__init__(EX[:-1],0)
-            direct.makeWay()
-        elif whichop in ComparisonOperations:
-            instruction_count += 1
-            direct.__init__(EX[:-1],EX[-1])
-            C=direct.makeWay()
-            # print(C,"njerer")
-            if C==(EX[-1]+1):
+    if EX != []:
+        if EX[0] in ComparisonOperations:
+            direct.__init__(EX[:-1],EX[-1]) 
+            C = direct.makeWay()
+            if C == (EX[-1]+1):
+                MEM = copy.deepcopy(EX)
+                setStageStatus(2, True)
                 pass
             else:
-                # print(C,"eererer")
-                return [True,C]
-        return []
-
-class S4:
-    def __init__(self):
-        print("",end="")
-    
-    def purpose(self,CLOCK):
-        global MEM
-        global RegStatus
-        if MEM!=[] and MEM[0] in NormalOperations:
-            pass
-    
-class S5:
-    def __init__(self):
-        print("",end="")
-    
-    def purpose(self,CLOCK):
-        global instruction_count
-        global IDRF
-        global RegStatus
-        if WB!= [] and WB[0] in NormalOperations:
-            RegStatus[WB[1]] = [max(0,RegStatus[WB[1]][0]-1),CLOCK+1]
-        if WB != []:
-            instruction_count += 1
-
-IFER=S1()
-IDRFER=S2()
-EXER=S3()
-MEMER=S4()
-WBER=S5()
-
-Instructions.append(["BYTESPLEASE"])
-start=True
-
-insnum = 0
-stinst = []
-
-okayyy = int(input("Enter \'0\' to disable \"FORWARDING\" else Enter \'1\' : "))
-print()
-show= int(input("Enter \'0\' to view \"INSTRUCTIONS\" that are being executed else Enter \'1\' : "))
-print()
-def view(x):
-    if x!=[]:
-        return x[-1]
-    return "   "
-
-while start==True or WB!=["BYTESPLEASE"]:
-    isForwardingOn = True if okayyy > 0 else False
-    start=False
-    CLOCK+=1
-    
-    isthereastall = False
-    
-    IFER.purpose()
-    
-    if show==0:
-        print("[{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}] , [{}: {:<3}]".format("IF",view(IF),"IDRF",view(IDRF),"EX",view(EX),"MEM",view(MEM),"WB",view(WB)))
-        # print(IF,IDRF,EX,MEM,WB)
-    # print(IF)
-    
-    stageStatus[0] = False
-        
-    isthereastall,isjump=IDRFER.purpose(CLOCK)
-    # print(isthereastall)
-    stageStatus[1] = False
-    wastherestall = False
-    if isjump:        
-        IF = []
-        IDRF=[]
-    elif isthereastall:
-        wastherestall = True
-        stageStatus[1] = True
-        STALLS += 1
-        # print(IDRF)
-        stinst.append(IDRF[:-1])
-    
-    ExOutput=EXER.purpose(CLOCK)
-    
-    if ExOutput!=[]:
-        # STALLS += 1;
-        # stinst.append(EX[:-1])
-        RegStatus[IDRF[1]] =[0,0]
-        PC=ExOutput[-1]
-        IF=[]
-        IDRF,EX=[],[]
-
-    MEMER.purpose(CLOCK)
-    
-    WBER.purpose(CLOCK)
-    
-    WB=copy.deepcopy(MEM)
-    MEM=copy.deepcopy(EX)
-
-    if stageStatus[2] == False:
-        if stageStatus[1] == False:
-            EX=copy.deepcopy(IDRF)
+                CPC = C
+                jump = 2
+                if isStageAval(3):
+                    MEM = [] 
+        elif isStageAval(2):
+            # call for execution
+            if EX[0] not in MemoryRelated:
+                direct.__init__(EX[:-1],EX[-1]) 
+                direct.makeWay()
+            if EX[0] == "la":
+                setStatus(EX[1], -1)
+            if isForwardingOn:
+                if EX[0]!="la" and (EX[0] in NormalOperations):
+                        setStatus(EX[1],-1)
+            if isStageAval(3):
+                setStageStatus(2,True)
+                MEM = copy.deepcopy(EX)
+            else:
+                setStageStatus(2,False)
         else:
-            EX=[]
-    if stageStatus[1] == False:
-        IDRF=copy.deepcopy(IF)
+                if isStageAval(3):
+                    setStageStatus(2,True)
+                    MEM = copy.deepcopy(EX)
+                else:
+                    setStageStatus(3,False)
+    else:
+        if isStageAval(3):
+            MEM = []
+    printing.append(EX)
 
-stnewinst = []
-[stnewinst.append(x) for x in stinst if x not in stnewinst ]
+
+    if IDRF != []:
+        if IDRF[0] in NonComparisionJumps:
+            jump = 1
+            if IDRF[0] == "jr":
+                CPC = Registers["$ra"]
+            else:
+                CPC = Loops[IDRF[1]]
+            setStageStatus(1,False)
+            if isStageAval(2):
+                EX = []
+        if jump == -1:
+            if isStageAval(2):
+                if IDRF[0] == "addi":
+                    if isUpdated(IDRF[2]):
+                        setStatus(IDRF[1],1)
+                        setStageStatus(1,True)
+                        EX = copy.deepcopy(IDRF)
+                    else:
+                        EX = []
+                        setStageStatus(1,False)
+                elif IDRF[0] in NormalOperations:
+                    if IDRF[0] != "la":
+                        if isUpdated(IDRF[2]) and isUpdated(IDRF[3]):
+                            setStatus(IDRF[1],1)
+                            # print(RegStatus[IDRF[2]],IDRF[2])
+                            setStageStatus(1,True)
+                            EX = copy.deepcopy(IDRF)
+                        else:
+                            EX = []
+                            setStageStatus(1,False)
+                    else:
+                        EX = copy.deepcopy(IF)
+                        setStatus(IDRF[1], 1)
+                        setStageStatus(1,True)
+                elif IDRF[0] in MemoryRelated:
+                    if IDRF[0] == "lw":
+                        reg = IDRF[-2].find('$')
+                        reg = IDRF[-2][reg:-1]
+                        if isUpdated(reg):
+                            setStatus(IDRF[1],1)
+                            setStageStatus(1,True)
+                            EX = copy.deepcopy(IDRF)
+                        else:
+                            EX = []
+                            setStageStatus(1,False)
+                    if IDRF[0] == "sw":
+                        reg = IDRF[-2].find('$')
+                        reg = IDRF[-2][reg:-1]
+                        if isUpdated(reg) and isUpdated(IDRF[1]):
+                            # setStatus(IDRF[1],1)
+                            setStageStatus(1,True)
+                            EX = copy.deepcopy(IDRF)
+                        else:
+                            EX = []
+                            setStageStatus(1,False)
+                elif IDRF[0] in ComparisonOperations:
+                    if isUpdated(IDRF[1]) and isUpdated(IDRF[2]):
+                        setStageStatus(1,True)
+                        EX = copy.deepcopy(IDRF)
+                    else:
+                        EX = []
+                        setStageStatus(1,False)
+            else:
+                setStageStatus(1, False)
+    else:
+        if isStageAval(2):
+            EX = []
+    printing.append(IDRF)
+    
+
+    if IF != [] or start:
+        if isStageAval(0):
+            if PC == len(Instructions):
+                IF = []
+            else:
+                IF = copy.deepcopy(Instructions[PC])
+                PC += 1
+        if isStageAval(1):
+            IDRF = copy.deepcopy(IF)
+            if not isStageAval(0):
+                setStageStatus(0,True)
+        else:
+            setStageStatus(0,False)
+    else:
+        if isStageAval(1):
+            IDRF = [] 
+    printing.append(IF)
+
+    # for i in range(len(printing)-1,-1,-1):
+        # if printing[i]!= []:
+            # print(printing[i],end=" ")
+    # print()
+
+    start = False
+    cnt += 1
+    if jump == 1:
+        setStageStatus(1,True)  
+        setStageStatus(0,True)
+        IDRF = []
+        jump = -1
+        PC = CPC
+    
+    if jump == 2:
+        IDRF = []
+        EX = []
+        setStageStatus(1,True)
+        setStageStatus(2,True)
+        if isStageAval(3):
+            MEM = []
+        PC = CPC
+        jump = -1
+
+# stnewinst = []
+# [stnewinst.append(x) for x in stinst if x not in stnewinst ]
 
 
 # for i in range(NumberOfSets):
@@ -956,15 +952,15 @@ print()
 print("{:27} : {}".format("Number of Stalls",str(STALLS)))
 print()
 print("{:27} :".format("Instructions Per Count"), end=" ")
-print((instruction_count-1)/(CLOCK-4))
+print(0)
+# print((instruction_count-1)/(CLOCK-4))
 print()
-print("Instruction causing Stalls  :")
-print("\n")
-for i in range(len(stnewinst)):
-    x=", ".join(stnewinst[i])
-    print(x)
-    print()
-
+print("{:27} :".format("Level One Cache Miss Rate "), end=" ")
+print(100-(HitsCacheOne*100/TotalCacheOne))
+print()
+print("{:27} :".format("Level two Cache Miss Rate "), end=" ")
+print(100-(HitsCacheTwo*100/TotalCacheTwo))
+print()
 print("{:-^100s}".format(""))
 
 
