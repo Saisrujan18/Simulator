@@ -1,4 +1,3 @@
-
 # IMPORTING ALL THE LIBRARIES
 from collections import OrderedDict
 
@@ -66,9 +65,6 @@ NumberOfBlocks=int(CacheInput[-4])
 NumberOfElements=int(CacheInput[1])//4 
 NumberOfSets=int(CacheInput[0])//(NumberOfBlocks*int(CacheInput[1]))
 
-# print(NumberOfBlocks,NumberOfElements,NumberOfSets)
-
-
 offsetBits=int(math.log(NumberOfElements,2))
 indexBits=int(math.log(NumberOfSets,2))
 
@@ -100,8 +96,6 @@ def AddToMemory(ins):
 def checkRegister(R):
     return True if R in Registers.keys() else False
 
-# CLASSES FOR EACH INSTRUCTION
-
 def getIndex(address):
     temp=address>>(offsetBits+2)
     answer=temp%(2**indexBits) 
@@ -112,13 +106,12 @@ def BaseAddress(address):
     temp=address>>(offsetBits+2)
     return temp<<(offsetBits+2)
 
+# CLASSES FOR EACH INSTRUCTION
 
 class block:
     LruIndex=0
     blocksize=0
-    data=[]
     def __init__(self,noe):
-        # print(noe)
         self.LruIndex=0
         self.occupied=False
         self.blocksize=noe
@@ -130,27 +123,19 @@ class block:
         LruCounter+=1
         base=BaseAddress(address)
         self.baseAddress=base
-        self.data=[]
-        for i in range(self.blocksize):
-            self.data.append(base+i*4)
     
     def replace(self,address):
         global LruCounter
         self.LruIndex=LruCounter+1
         LruCounter+=1
-        newaddress=self.data[0][0]
-        base=BaseAddress(address)
-        self.baseAddress=base
-        self.data=[]
-        for i in range(self.blocksize):
-            self.data.append(base+i*4)
+        newaddress=self.baseAddress
+        self.baseAddress=BaseAddress(address)
         return newaddress
 
     def search(self,address):
-        if len(self.data)==0:
+        if self.baseAddress==-1:
             return False
-        bamse=BaseAddress(address)
-        if self.data[0]==bamse:
+        if self.baseAddress==address:
             return True
         return False
 
@@ -205,6 +190,7 @@ class cache:
 
     def search(self,address):
         whichset=getIndex(address)
+        # print(whichset)
         return self.setters[whichset].search(address)   
 
     def update(self,address):
@@ -218,9 +204,9 @@ class Processor:
         self.LevelTwoCache=cache(numberOfSets,2*numberOfblocks,numberofDataElements,L2latency)
    
     def process(self,address):
+        address=BaseAddress(address)
         global TotalCacheOne,TotalCacheTwo,HitsCacheOne,HitsCacheTwo
         TotalCacheOne+=1
-        # print(address,BaseAddress(address))
         if self.LevelOneCache.search(address)==True:
             HitsCacheOne+=1
             self.LevelOneCache.update(address)
@@ -240,7 +226,6 @@ class Processor:
             # indication to add to L2
             random=self.LevelTwoCache.insert(newaddress)
         return self.LevelOneCache.latency+self.LevelTwoCache.latency+MainMemoryLatency
-
 
 Intel=Processor(NumberOfSets,NumberOfBlocks,NumberOfElements,CacheOneLatency,CacheTwoLatency)
 
@@ -414,9 +399,9 @@ class lw:
             sys.exit()
         requiredAddress=(offset//4)*4 +Registers[self.instructions[-1]]
         # print(self.instructions,offset)
-        print(Registers[self.instructions[1]])
+        # print(Registers[self.instructions[1]])
         Registers[self.instructions[1]]=Memory[ requiredAddress ]
-        print(Registers[self.instructions[1]])
+        # print(Registers[self.instructions[1]])
         # print(requiredAddress)
         latennn = (Intel.process(requiredAddress))
         # print("latennn :",latennn)
@@ -763,7 +748,7 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
                 else:
                     direct.__init__(MEM[:-1],MEM[-1])       ## MEM ACCESS
                     Mem_stalls = direct.makeWay()
-                    print("MEMSTALL :", Mem_stalls)
+                    # print("MEMSTALL :", Mem_stalls)
                     if Mem_stalls > 0:
                         setStageStatus(3,False)
                         WB = []
@@ -902,10 +887,10 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
             IDRF = [] 
     printing.append(IF)
 
-    for i in range(len(printing)-1,-1,-1):
+    # for i in range(len(printing)-1,-1,-1):
         # if printing[i]!= []:
-            print(printing[i],end=" ");
-    print()
+            # print(printing[i],end=" ")
+    # print()
 
     start = False
     cnt += 1
@@ -967,15 +952,15 @@ print()
 print("{:27} : {}".format("Number of Stalls",str(STALLS)))
 print()
 print("{:27} :".format("Instructions Per Count"), end=" ")
-print((instruction_count-1)/(CLOCK-4))
+print(0)
+# print((instruction_count-1)/(CLOCK-4))
 print()
-print("Instruction causing Stalls  :")
-print("\n")
-for i in range(len(stnewinst)):
-    x=", ".join(stnewinst[i])
-    print(x)
-    print()
-
+print("{:27} :".format("Level One Cache Miss Rate "), end=" ")
+print(100-(HitsCacheOne*100/TotalCacheOne))
+print()
+print("{:27} :".format("Level two Cache Miss Rate "), end=" ")
+print(100-(HitsCacheTwo*100/TotalCacheTwo))
+print()
 print("{:-^100s}".format(""))
 
 
