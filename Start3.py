@@ -717,9 +717,10 @@ def addStall(inc):
 
 
 Mem_stalls = 0
-CPC = -1
-
+CPC = -1  
+Fresh = 0
 while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
+    CLOCK += 1
     jump = -1
     printing = []
     if WB != []:
@@ -733,7 +734,7 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
         if Mem_stalls > 0:
             Mem_stalls -= 1
             if Mem_stalls == 0:
-                if isForwardingOn:
+                if isForwardingOn and MEM[0] != "sw":
                     setStatus(MEM[1],-1)
             elif isStageAval(4):
                 WB = []
@@ -781,7 +782,7 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
                 setStatus(EX[1], -1)
             if isForwardingOn:
                 if EX[0]!="la" and (EX[0] in NormalOperations):
-                        setStatus(EX[1],-1)
+                    setStatus(EX[1],-1)
             if isStageAval(3):
                 setStageStatus(2,True)
                 MEM = copy.deepcopy(EX)
@@ -875,6 +876,7 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
                 IF = []
             else:
                 IF = copy.deepcopy(Instructions[PC])
+                Fresh += 1
                 PC += 1
         if isStageAval(1):
             IDRF = copy.deepcopy(IF)
@@ -888,8 +890,7 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
     printing.append(IF)
 
     # for i in range(len(printing)-1,-1,-1):
-        # if printing[i]!= []:
-            # print(printing[i],end=" ")
+    #         print(printing[i],end=" ")
     # print()
 
     start = False
@@ -910,6 +911,8 @@ while (start or MEM!= [] or WB!=[] or IF!=[] or IDRF!=[] or EX!=[]):
             MEM = []
         PC = CPC
         jump = -1
+
+
 
 # stnewinst = []
 # [stnewinst.append(x) for x in stinst if x not in stnewinst ]
@@ -949,21 +952,25 @@ print("{:-^100s}".format(""))
 print("{:-^100s}".format(""))
 print()
 
+STALLS = CLOCK - (Fresh + 4)
+
+
 print("{:27} : {}".format("Number of Stalls",str(STALLS)))
 print()
 print("{:27} :".format("Instructions Per Count"), end=" ")
-print(0)
-# print((instruction_count-1)/(CLOCK-4))
+print((Fresh)/(CLOCK))
 print()
 print("{:27} :".format("Level One Cache Miss Rate "), end=" ")
-print(100-(HitsCacheOne*100/TotalCacheOne))
+if TotalCacheOne > 0:
+    print(100-(HitsCacheOne*100/TotalCacheOne))
+else:
+    print("Cache not accessed")
 print()
 print("{:27} :".format("Level two Cache Miss Rate "), end=" ")
-print(100-(HitsCacheTwo*100/TotalCacheTwo))
+if TotalCacheOne > 0:
+    print(100-(HitsCacheTwo*100/TotalCacheTwo))
+else:
+    print("Cache not accessed")
 print()
 print("{:-^100s}".format(""))
 
-
-# print(HitsCacheOne,TotalCacheOne)
-
-# print(HitsCacheTwo,TotalCacheTwo)
