@@ -61,3 +61,15 @@ __*SneakPeek :*__
    * __NOTE__: branch instructions and jump instructions donot result in stalls(assuming simple branch predictor).
 
 Run __python start2.py__ in your terminal to execute the program.
+
+## Simulator Phase III
+1. Changed the prior model of pipeline.
+2. Implemented Two Level Cache (LRU Cache).
+3. __CacheInput.txt__ contains all the specifications related to the Cache.
+4. Results Displayed after Execution:
+   * Number of stalls
+   * Instructions per Cycle
+   * Cache One Miss Rate
+   * Cache Two Miss Rate
+   * Final contents in Memory and Registers.
+5. Run __python start3.py__ in terminal to execute the program.
