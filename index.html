@@ -4,16 +4,51 @@
     <meta charset="UTF-8">
     <title>Hello New Tab!</title>
     <script src="control.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
 </head>
 <body style="background: white;">
-    <h1>Hello Bros!</h1>
-    <p>
-        We are using Node.js <span id="node-version"></span>,
-        Chromium <span id="chrome-version"></span>,
-        and Electron <span id="electron-version"></span>.
-    </p>
-    <input id="input" type="file"/>
-    <button type="button" id="s" onclick="save()">Click</button>
+    <div class = "container">
+        <!--registers and file display a grid -->
+        <div class="top">
+            <div class="registers">
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+                <h3>REGISTERS</h3>
+            </div>
+            <div class ="instructions">
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                <div class="instruction">ADD $t1, $t2, $t3</div>
+                
+            </div>
+        </div>
+        <hr>
+        <!--cache stages console memory -->
+        <div class="bottom">
+            <div class="cache"></div>
+            <div class="stages-memory">
+                <div class="stages"></div>
+                <div class="memory"></div>
+            </div>
+        </div>
+    </div>
+   
 </body>
 </html>

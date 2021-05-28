@@ -1,9 +1,11 @@
 import fs from 'fs';
 
-fs.writeFile("InputFile","hello mf");
+fs.readFile("InputFile","hello mf");
+
+console.log(fs);
 // var fs=
 // function save()
-// {
+// { 
     // const fileInput = document.getElementById('input');
     // fileInput.onchange = () => 
     // {

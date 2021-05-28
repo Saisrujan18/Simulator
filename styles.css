@@ -1,0 +1,66 @@
+.top{
+    display: flex;
+    flex-direction: row;
+    
+    height: 60vh;
+    background-color: violet;
+}
+
+
+.registers{
+    width: 18vw;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    background-color: teal;
+    text-align: center;
+}   
+
+.instructions{
+    width: 82vw;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+.instruction{
+    width: 95%;
+    margin-inline: auto;
+    margin-top: 5px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 10px;;
+    font-size: larger;
+    font-weight: 600;
+    word-spacing: 10px;
+    letter-spacing: 2px;
+}
+
+.bottom{
+    display: flex;
+    flex-direction: row;
+    background-color: tomato;
+    height: 35vh;
+}
+
+.cache{
+    width: 18vw;
+    background-color: grey;
+}
+
+.stages-memory{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+}
+
+.stages{
+    height: 100%;
+    background: yellow;
+    width: 82vw;
+}
+.memory{
+    height: 100%;
+    background: green;
+    width: 82vw;
+}
