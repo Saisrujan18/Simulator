@@ -1,17 +1,15 @@
-import fs from 'fs';
+// import react from 'react';
 
-fs.readFile("InputFile","hello mf");
-
-console.log(fs);
-// var fs=
-// function save()
-// { 
-    // const fileInput = document.getElementById('input');
-    // fileInput.onchange = () => 
-    // {
-    //     const selectedFile = fileInput.files[0];
-    //     console.log(selectedFile);
-    // }
-    // let data = "Learning how to write in a file.";
-    // fs.writeFile('InputFile', data, (err) => {if(err) throw err;});
-// }
+function loadFileAsText()
+{
+    var fileToLoad = document.getElementById("fileToLoad").files[0];
+  
+    var fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent)
+    {
+        var textFromFileLoaded = fileLoadedEvent.target.result;
+        console.log(textFromFileLoaded);
+        // document.getElementById("inputTextToSave").value = textFromFileLoaded;
+    };
+    fileReader.readAsText(fileToLoad, "UTF-8");
+}
