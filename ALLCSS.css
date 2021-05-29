@@ -1,0 +1,101 @@
+.WHOLE
+{
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: row;
+    height: 96vh;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    margin-left: 0.5vw;    
+    margin-right: 0.5vw;    
+    border-radius: 2%;
+}
+
+.REGISTERS
+{
+    background-color: #2c2f33;
+    height: 96vh;
+    width: 19.2vw;
+    border-radius: 2%;
+    padding: auto;
+    overflow-y:scroll
+}
+.SIMP
+{
+    background-color: yellow;
+    height: 96vh;
+    width: 79vw;
+    border-radius: 1%;
+    display: flex;
+    flex-direction: column;
+}
+
+.IPM
+{
+    background-color: black;
+    height: 75vh;
+    width: 79vw;
+    border-radius: 1%;
+    display: flex;
+    flex-direction: row;
+}
+.CONSOLE
+{
+    background-color:red;
+    height: 21vh;
+    width: 79vw;
+    border-radius: 1%;
+    overflow-y: scroll;
+}
+
+.INPUT
+{
+    background-color: green;
+    height:75vh;
+    width: 60vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.MEMORY
+{
+    background-color: blue;
+    height: 75vh;
+    width:19vw;
+    overflow-y: scroll;
+}
+
+.BUTTONS
+{
+    background-color: grey;
+    height: 5vh;
+    width: 60vw;
+}
+.TEXTAREA textarea
+{
+    background-color: rgb(255, 255, 255);
+    height:70vh;
+    width: 60vw;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+    width: 0.8vw;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #4a4d52;
+    border: 2px solid #282a2d;
+    border-radius: 10px;
+}

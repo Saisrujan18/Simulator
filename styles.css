@@ -7,12 +7,14 @@
 }
 
 
-.registers{
+.registers
+{
     width: 18vw;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
-    background-color: teal;
+    background-color: #2c2f33;
+    color: #99aab5;
     text-align: center;
 }   
 

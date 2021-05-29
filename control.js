@@ -1,5 +1,3 @@
-// import react from 'react';
-
 function loadFileAsText()
 {
     var fileToLoad = document.getElementById("fileToLoad").files[0];
@@ -9,7 +7,13 @@ function loadFileAsText()
     {
         var textFromFileLoaded = fileLoadedEvent.target.result;
         console.log(textFromFileLoaded);
-        // document.getElementById("inputTextToSave").value = textFromFileLoaded;
+        document.getElementById("MIPS").value = textFromFileLoaded;
     };
     fileReader.readAsText(fileToLoad, "UTF-8");
+}
+
+function saveToInputFile()
+{
+    var x = document.getElementById("MIPS").value;
+    console.log(x);
 }
