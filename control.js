@@ -12,8 +12,8 @@ function loadFileAsText()
     fileReader.readAsText(fileToLoad, "UTF-8");
 }
 
-function saveToInputFile()
+function RUN()
 {
-    var x = document.getElementById("MIPS").value;
+    var x=document.getElementById("MIPS").value;
     console.log(x);
 }

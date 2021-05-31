@@ -1,5 +1,5 @@
 {
-  "name": "simulator-gui",
+  "name": "simulator",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron": "^12.0.9"
+    "electron": "^12.0.9",
+    "python-shell": "^3.0.0"
   },
   "devDependencies": {
     "electron-reloader": "^1.2.1"
