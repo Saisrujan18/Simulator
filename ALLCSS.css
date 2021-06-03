@@ -16,13 +16,15 @@
     margin: auto;
     border-radius: 5px;    
     overflow-y:scroll;
+    text-align: center;
 }
+
 .register{
-    border-bottom: 1px solid #525252;
     font-size: 1.1rem;
     margin-left: 10px;
     margin-right: 10px;
     display: flex;
+    padding: 5px;
     justify-content: space-between;
 }
 .SIMP
@@ -47,7 +49,7 @@
     background-color:#525252;
     color: #63676e;
     height: 19%;
-    width: 98.5%;
+    width: 99%;
     border-radius: 5px;
     padding: 5px;
     margin: auto;
@@ -62,7 +64,6 @@
     display: flex;
 
 }
-
 .MEMORY
 {
     background-color: #525252;
@@ -72,6 +73,20 @@
     margin-top: 0;
     border-radius: 5px;
     overflow-y: scroll; 
+    text-align: center;
+}
+.memwrapper{
+    display: flex;
+    justify-content: space-between;
+    color: rgb(189, 189, 189);
+    font-size: 1.1rem;
+    padding: 5px;
+}
+.memadd{
+
+}
+.memvalue{
+
 }
 .memorylocation{
     padding: 5px;

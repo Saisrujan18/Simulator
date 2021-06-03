@@ -24,18 +24,32 @@ function RUN()
 				regValue[i] = message[i]  
 			}
 			var memory = document.getElementById("MEMORY")
-			while(memory.lastElementChild) memory.removeChild(memory.lastElementChild)	
+			while(memory.lastElementChild) {
+				memory.removeChild(memory.lastElementChild)	
+			}
+			var memoryHeader = document.createElement("h4")
+			memoryHeader.innerHTML = "MEMORY"
+			memory.appendChild(memoryHeader)
 			for(let i = 30;i<message.length;i++){
-				var memoryLocation = document.createElement("div")
-				memoryLocation.classList.add('memorylocation') 
-				memoryLocation.innerHTML = message[i];
-				memory.appendChild(memoryLocation)
+				var memAddress = message[i].split(':')[0]
+				var memValue = message[i].split(':')[1]
+				var memoryLocationWrapper = document.createElement("div")
+				memoryLocationWrapper.classList.add('memwrapper')
+				var memoryLocationAddress = document.createElement("div")
+				memoryLocationAddress.classList.add("memadd")
+				memoryLocationAddress.innerHTML = memAddress
+				var memoryLocationValue = document.createElement("div")
+				memoryLocationValue.classList.add("memvalue")
+				memoryLocationValue.innerHTML = memValue
+				memoryLocationWrapper.appendChild(memoryLocationAddress) 
+				memoryLocationWrapper.appendChild(memoryLocationValue)
+				memory.appendChild(memoryLocationWrapper)
 			}
 		}
 
 		for(let i=0;i<30;i++){
 			var register = document.getElementById(`${i}v`);
-			register.innerHTML = `       ${regValue[i]} `; // format
+			register.innerHTML = ` ${regValue[i]} `; // format
 		}
 		
 		if(!message){document.getElementById("console").innerHTML="Terminated due to errors";}
