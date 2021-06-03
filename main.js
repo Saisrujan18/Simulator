@@ -1,6 +1,5 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
-var requirejs=require('requirejs')
 
 try {
 	require('electron-reloader')(module)

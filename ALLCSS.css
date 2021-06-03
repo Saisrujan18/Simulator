@@ -1,6 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
 .WHOLE
 {
-    background-color: #02f7a5;
     display: flex;
     flex-direction: row;
     height: 96vh;
@@ -15,82 +16,86 @@
 
 .REGISTERS
 {
-    background-color: #2c2f33;
+    background-color: #ec625f;;
     height: 96vh;
     width: 20vw;
-    /* border-radius: 2%; */
-    padding: auto;
+    border-radius: 2%;
+    margin-right: 0.5vw;
+    padding-left: 2vw;
     overflow-y:auto;
 }
 .SIMP
 {
-    background-color: yellow;
     height: 96vh;
-    width: 79vw;
-    /* border-radius: 1%; */
+    width: 78.5vw;
     display: flex;
     flex-direction: column;
 }
 
 .IPM
 {
-    background-color: black;
-    height: 76vh;
-    width: 79vw;
-    border-radius: 1%;
+    height: 75vh;
+    margin-bottom: 1vh;
+    width: 78.5vw;
     display: flex;
     flex-direction: row;
 }
 .CONSOLE
 {
-    background-color:red;
+    background-color:#525252;
+    color: #63676e;
     height: 20vh;
-    width: 79vw;
+    width: 78.5vw;
     border-radius: 1%;
     overflow-y: scroll;
 }
 
 .INPUT
 {
-    background-color: green;
-    height:76vh;
+    height:75vh;
     width: 60vw;
+    margin-right: 0.5vw;
     display: flex;
     flex-direction: column;
 }
 
 .MEMORY
 {
-    background-color: rgb(7, 52, 255);
-    height: 76vh;
-    width:19vw;
+    background-color: #525252;
+    height: 75vh;
+    width:18vw;
+    margin-left: 0.5vw;
+    border-radius: 2%;
     overflow-y: scroll;
 }
 
 .BUTTONS
 {
-    background-color: grey;
+    background-color: #ff0000;
     height: 5vh;
-    width: 60vw;
+    width: 60.5vw;
 }
+
 .TEXTAREA textarea
 {
-    background-color: rgb(255, 255, 255);
-    height:71vh;
-    margin: none;
-    width: 60vw;
+    background-color: #414141;
+    color: rgb(189, 189, 189);
+    font-family: 'Source Code Pro', monospace;
+    height:70vh;
+    margin-right: 0.5vw;
+    margin-left: 0.5vw;
+    width: 59vw;
+    border-radius: 2%;
+    margin-top: 0.5vh;
     overflow-y:visible;
     resize: none;
 }
-.TEXTAREA textarea::-webkit-scrollbar {
-    width: 0.4vw;
-    background-color: transparent;
-}
 
-.TEXTAREA textarea::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
+
+
+.TEXTAREA textarea::-webkit-scrollbar {
+    width: 0.6vw;
+    background-color: transparent;
 }
 
 .TEXTAREA textarea::-webkit-scrollbar-corner {
@@ -98,16 +103,13 @@
 }
 
 .TEXTAREA textarea::-webkit-scrollbar-thumb {
-    background-color: #4a4d52;
-    border: 0.8vw solid #282a2d;
+    background-color: #313131;
+    border: 0.8vw solid #313131;
     border-radius: 10px;
 }
 
-
-
-
 .REGISTERS::-webkit-scrollbar {
-    width: 0.8vw;
+    width: 0.6vw;
     background-color: transparent;
 }
 
@@ -127,6 +129,50 @@
 }
 
 .REGISTERS::-webkit-scrollbar-thumb {
+    background-color: #4a4d52;
+    border: 0.6vw solid #282a2d;
+    border-radius: 10px;
+} 
+
+
+.CONSOLE::-webkit-scrollbar {
+    width: 0.8vw;
+    background-color: transparent;
+}
+
+.CONSOLE::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.CONSOLE::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+.CONSOLE::-webkit-scrollbar-thumb {
+    background-color: #4a4d52;
+    border: 0.8vw solid #282a2d;
+    border-radius: 10px;
+} 
+
+
+
+.MEMORY::-webkit-scrollbar {
+    width: 0.8vw;
+    background-color: transparent;
+}
+
+.MEMORY::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+.MEMORY::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+.MEMORY::-webkit-scrollbar-thumb {
     background-color: #4a4d52;
     border: 0.8vw solid #282a2d;
     border-radius: 10px;

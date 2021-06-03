@@ -481,7 +481,9 @@ while i<len(Instructions):
 #   RESULTS OF THE SIMULATOR
 
 # print(Instructions)
-print(Registers)
+# print(Registers)
+for x in Registers.items():
+    print(x[-1])
 for i in Memory:
     if i <MemoryIndex:
         print(i,end=" : ")

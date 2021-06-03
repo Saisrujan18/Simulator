@@ -10,15 +10,22 @@ function RUN()
 	}
 	PythonShell.run('Start.py',options,function(err,message) {
 		if  (err)  throw err;
-    	console.log(message);
-		if(message==null)
-		{
-			document.getElementById("console").innerHTML="Terminated due to errors";
-		}
-		else
-		{
-			document.getElementById("console").innerHTML="Success !!!";
-		}
+    	
+		console.log(message);
+		
+		if(message==null){document.getElementById("console").innerHTML="Terminated due to errors";}
+		else {document.getElementById("console").innerHTML="Success !!!";}
+		
+		// document.getElementById("Register")="<p>hell</p><p>hell></p>";
+		var tag = document.createElement("p");
+   		var text = document.createTextNode("Tutorix");
+   		tag.appendChild(text);
+		var tag1 = document.createElement("p");
+   		var t1ext = document.createTextNode("orix");
+   		tag1.appendChild(t1ext);
+   		var element = document.getElementById("REGISTERS");
+   		element.appendChild(tag);
+   		element.appendChild(tag1);
 	});
 }
 
