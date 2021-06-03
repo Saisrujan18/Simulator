@@ -486,8 +486,10 @@ for x in Registers.items():
     print(x[-1])
 for i in Memory:
     if i <MemoryIndex:
-        print(i,end=" : ")
-        print(Memory[i])
+        print(i,end=":")
+        for j in range(5):
+            print(" ",end="")
+        print(Memory[i]) ## chill
     else:
         break
 # print(Memory)

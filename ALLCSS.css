@@ -4,39 +4,41 @@
 {
     display: flex;
     flex-direction: row;
-    height: 96vh;
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-    margin-left: 0.5vw;    
-    margin-right: 0.5vw;    
-    border-radius: 2%;
+    height: 92vh; 
+    justify-content: center;
 }
-
-
 
 .REGISTERS
 {
-    background-color: #ec625f;;
-    height: 96vh;
-    width: 20vw;
-    border-radius: 2%;
-    margin-right: 0.5vw;
-    padding-left: 2vw;
-    overflow-y:auto;
+    background-color: #ec625f;    
+    height: 98%;
+    width: 18vw;
+    margin: auto;
+    border-radius: 5px;    
+    overflow-y:scroll;
+}
+.register{
+    border-bottom: 1px solid #525252;
+    font-size: 1.1rem;
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    justify-content: space-between;
 }
 .SIMP
 {
-    height: 96vh;
-    width: 78.5vw;
+    margin: auto;
+    height: 98%;
+    width: 80vw;    
     display: flex;
     flex-direction: column;
 }
 
 .IPM
 {
-    height: 75vh;
-    margin-bottom: 1vh;
-    width: 78.5vw;
+    height: 80%;
+    margin: auto;
+    width: 100%;
     display: flex;
     flex-direction: row;
 }
@@ -44,36 +46,46 @@
 {
     background-color:#525252;
     color: #63676e;
-    height: 20vh;
-    width: 78.5vw;
-    border-radius: 1%;
+    height: 19%;
+    width: 98.5%;
+    border-radius: 5px;
+    padding: 5px;
+    margin: auto;
     overflow-y: scroll;
 }
 
 .INPUT
 {
-    height:75vh;
-    width: 60vw;
+    height:100%;
+    width: 80%;
     margin-right: 0.5vw;
     display: flex;
-    flex-direction: column;
+
 }
 
 .MEMORY
 {
     background-color: #525252;
-    height: 75vh;
-    width:18vw;
-    margin-left: 0.5vw;
-    border-radius: 2%;
-    overflow-y: scroll;
+    border: 1px solid #797979;
+    height: 99%;
+    width:30%;
+    margin-top: 0;
+    border-radius: 5px;
+    overflow-y: scroll; 
 }
+.memorylocation{
+    padding: 5px;
+    color: rgb(189, 189, 189);
+}
+
 
 .BUTTONS
 {
     background-color: #ff0000;
     height: 5vh;
-    width: 60.5vw;
+    width:  100%;
+    padding: 2px;
+    border-radius: 5px;
 }
 
 .TEXTAREA textarea
@@ -81,14 +93,14 @@
     background-color: #414141;
     color: rgb(189, 189, 189);
     font-family: 'Source Code Pro', monospace;
-    height:70vh;
-    margin-right: 0.5vw;
-    margin-left: 0.5vw;
-    width: 59vw;
-    border-radius: 2%;
-    margin-top: 0.5vh;
-    overflow-y:visible;
+    margin-top: none;
     resize: none;
+    height: 98%;
+    width: 59.5vw;
+    outline: none;
+    margin: auto;
+    border-radius: 5px;
+    overflow-y:visible;
 }
 
 
@@ -105,11 +117,11 @@
 .TEXTAREA textarea::-webkit-scrollbar-thumb {
     background-color: #313131;
     border: 0.8vw solid #313131;
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
 .REGISTERS::-webkit-scrollbar {
-    width: 0.6vw;
+    width: 0.2vw;
     background-color: transparent;
 }
 
@@ -131,7 +143,7 @@
 .REGISTERS::-webkit-scrollbar-thumb {
     background-color: #4a4d52;
     border: 0.6vw solid #282a2d;
-    border-radius: 10px;
+    border-radius: 5px;
 } 
 
 
@@ -153,7 +165,7 @@
 .CONSOLE::-webkit-scrollbar-thumb {
     background-color: #4a4d52;
     border: 0.8vw solid #282a2d;
-    border-radius: 10px;
+    border-radius: 5px;
 } 
 
 
@@ -175,5 +187,5 @@
 .MEMORY::-webkit-scrollbar-thumb {
     background-color: #4a4d52;
     border: 0.8vw solid #282a2d;
-    border-radius: 10px;
+    border-radius: 5px;
 } 

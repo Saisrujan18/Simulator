@@ -1,9 +1,16 @@
 var {PythonShell} = require('python-shell')
 var path = require("path");
+const { brotliCompress } = require('zlib');
+const { measureMemory } = require('vm');
+const { memoryUsage } = require('process');
 
 function RUN()
 {
 	var x = document.getElementById("MIPS").value;
+	var regValue = []
+	for(let i = 0;i<30;i++){
+		regValue.push("0");
+	}	
 	var options = {
 		scriptPath : path.join(__dirname, '/'),
 		args : [x]
@@ -12,20 +19,38 @@ function RUN()
 		if  (err)  throw err;
     	
 		console.log(message);
+		if(message){
+			for(let i=0;i<30;i++){
+				regValue[i] = message[i]  
+			}
+			var memory = document.getElementById("MEMORY")
+			while(memory.lastElementChild) memory.removeChild(memory.lastElementChild)	
+			for(let i = 30;i<message.length;i++){
+				var memoryLocation = document.createElement("div")
+				memoryLocation.classList.add('memorylocation') 
+				memoryLocation.innerHTML = message[i];
+				memory.appendChild(memoryLocation)
+			}
+		}
+
+		for(let i=0;i<30;i++){
+			var register = document.getElementById(`${i}v`);
+			register.innerHTML = `       ${regValue[i]} `; // format
+		}
 		
-		if(message==null){document.getElementById("console").innerHTML="Terminated due to errors";}
+		if(!message){document.getElementById("console").innerHTML="Terminated due to errors";}
 		else {document.getElementById("console").innerHTML="Success !!!";}
 		
-		// document.getElementById("Register")="<p>hell</p><p>hell></p>";
-		var tag = document.createElement("p");
-   		var text = document.createTextNode("Tutorix");
-   		tag.appendChild(text);
-		var tag1 = document.createElement("p");
-   		var t1ext = document.createTextNode("orix");
-   		tag1.appendChild(t1ext);
-   		var element = document.getElementById("REGISTERS");
-   		element.appendChild(tag);
-   		element.appendChild(tag1);
+		// // document.getElementById("Register")="<p>hell</p><p>hell></p>";
+		// var tag = document.createElement("p");
+   		// var text = document.createTextNode("Tutorix");
+   		// tag.appendChild(text);
+		// var tag1 = document.createElement("p");
+   		// var t1ext = document.createTextNode("orix");
+   		// tag1.appendChild(t1ext);
+   		// var element = document.getElementById("REGISTERS");
+   		// element.appendChild(tag);
+   		// element.appendChild(tag1);
 	});
 }
 
