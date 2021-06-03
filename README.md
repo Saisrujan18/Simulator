@@ -73,3 +73,7 @@ Run __python start2.py__ in your terminal to execute the program.
    * Cache Two Miss Rate
    * Final contents in Memory and Registers.
 5. Run __python start3.py__ in terminal to execute the program.
+
+## User Interface : 
+
+![mipssimss](https://user-images.githubusercontent.com/68287683/120660292-cf81c100-c4a4-11eb-8717-0a740c59b704.PNG)
