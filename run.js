@@ -28,7 +28,7 @@ function RUN()
 				memory.removeChild(memory.lastElementChild)	
 			}
 			var memoryHeader = document.createElement("h4")
-			memoryHeader.innerHTML = "MEMORY"
+			memoryHeader.innerHTML = "M E M O R Y"
 			memory.appendChild(memoryHeader)
 			for(let i = 30;i<message.length;i++){
 				var memAddress = message[i].split(':')[0]
@@ -46,6 +46,16 @@ function RUN()
 				memory.appendChild(memoryLocationWrapper)
 			}
 		}
+		else
+		{
+			var memory = document.getElementById("MEMORY")
+			while(memory.lastElementChild) {
+				memory.removeChild(memory.lastElementChild)	
+			}
+			var memoryHeader = document.createElement("h4")
+			memoryHeader.innerHTML = "M E M O R Y"
+			memory.appendChild(memoryHeader)
+		}
 
 		for(let i=0;i<30;i++){
 			var register = document.getElementById(`${i}v`);
@@ -54,17 +64,6 @@ function RUN()
 		
 		if(!message){document.getElementById("console").innerHTML="Terminated due to errors";}
 		else {document.getElementById("console").innerHTML="Success !!!";}
-		
-		// // document.getElementById("Register")="<p>hell</p><p>hell></p>";
-		// var tag = document.createElement("p");
-   		// var text = document.createTextNode("Tutorix");
-   		// tag.appendChild(text);
-		// var tag1 = document.createElement("p");
-   		// var t1ext = document.createTextNode("orix");
-   		// tag1.appendChild(t1ext);
-   		// var element = document.getElementById("REGISTERS");
-   		// element.appendChild(tag);
-   		// element.appendChild(tag1);
 	});
 }
 

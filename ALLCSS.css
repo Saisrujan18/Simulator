@@ -1,18 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Electrolize&family=Source+Code+Pro:wght@300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400&display=swap');
+body
+{
+    margin: 0;
+    /* font-family: 'Montserrat', sans-serif;  */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color:#313131;
+    /* color:white ; */
+}
 
 .WHOLE
 {
     display: flex;
     flex-direction: row;
-    height: 92vh; 
+    height: 93vh; 
     justify-content: center;
+    background-color:#313131;
 }
 
 .REGISTERS
 {
-    background-color: #ec625f;    
+    background-color: #414141;  
+    /* color: #fffbdf;   */
+    color: rgb(189, 189, 189);
+    font-family: 'Source Code Pro', monospace;
     height: 98%;
-    width: 18vw;
+    width: 19vw;
     margin: auto;
     border-radius: 5px;    
     overflow-y:scroll;
@@ -47,12 +62,16 @@
 .CONSOLE
 {
     background-color:#525252;
-    color: #63676e;
+    color: #fffbdf;
+    /* font-family: 'Source Code Pro', monospace; */
+    font-family: 'Electrolize', sans-serif;
+    font-size: medium;
     height: 19%;
     width: 99%;
     border-radius: 5px;
     padding: 5px;
     margin: auto;
+    margin-top: 0.5%;
     overflow-y: scroll;
 }
 
@@ -62,12 +81,12 @@
     width: 80%;
     margin-right: 0.5vw;
     display: flex;
-
 }
 .MEMORY
 {
-    background-color: #525252;
-    border: 1px solid #797979;
+    background-color: #414141;
+    color: #fffbdf;
+    font-family: 'Source Code Pro', monospace;
     height: 99%;
     width:30%;
     margin-top: 0;
@@ -75,6 +94,7 @@
     overflow-y: scroll; 
     text-align: center;
 }
+
 .memwrapper{
     display: flex;
     justify-content: space-between;
@@ -88,25 +108,32 @@
 .memvalue{
 
 }
+
 .memorylocation{
     padding: 5px;
     color: rgb(189, 189, 189);
 }
 
 
+
+
 .BUTTONS
 {
-    background-color: #ff0000;
-    height: 5vh;
-    width:  100%;
+    /* background-color: #313131; */
+    background-color: hsl(0,0%,25%);
+    margin-top: 1vh;
+    height: 4vh;
+    width:  99%;
     padding: 2px;
     border-radius: 5px;
 }
 
+
+
 .TEXTAREA textarea
 {
-    background-color: #414141;
-    color: rgb(189, 189, 189);
+    background-color: #313131;
+    color: #fffbdf;
     font-family: 'Source Code Pro', monospace;
     margin-top: none;
     resize: none;
@@ -114,10 +141,21 @@
     width: 59.5vw;
     outline: none;
     margin: auto;
+    /* margin-bottom: 1%; */
     border-radius: 5px;
     overflow-y:visible;
 }
 
+
+
+
+
+
+::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
 
 
 .TEXTAREA textarea::-webkit-scrollbar {
@@ -131,24 +169,14 @@
 
 .TEXTAREA textarea::-webkit-scrollbar-thumb {
     background-color: #313131;
-    border: 0.8vw solid #313131;
+    border: 0.8vw solid #525252;
     border-radius: 5px;
 }
 
-.REGISTERS::-webkit-scrollbar {
-    width: 0.2vw;
-    background-color: transparent;
-}
 
-.REGISTERS::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
-}
-::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
+.REGISTERS::-webkit-scrollbar {
+    width: 0.4vw;
+    background-color: transparent;
 }
 
 .REGISTERS::-webkit-scrollbar-corner {
@@ -156,21 +184,15 @@
 }
 
 .REGISTERS::-webkit-scrollbar-thumb {
-    background-color: #4a4d52;
-    border: 0.6vw solid #282a2d;
+    background-color: #313131;
+    border: 0.4vw solid #525252;
     border-radius: 5px;
 } 
 
 
 .CONSOLE::-webkit-scrollbar {
-    width: 0.8vw;
+    width: 0.4vw;
     background-color: transparent;
-}
-
-.CONSOLE::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
 }
 
 .CONSOLE::-webkit-scrollbar-corner {
@@ -178,29 +200,23 @@
 }
 
 .CONSOLE::-webkit-scrollbar-thumb {
-    background-color: #4a4d52;
-    border: 0.8vw solid #282a2d;
+    background-color: #313131;
+    border: 0.4vw solid  #313131;
     border-radius: 5px;
 } 
 
 
 
 .MEMORY::-webkit-scrollbar {
-    width: 0.8vw;
+    width: 0.4vw;
     background-color: transparent;
-}
-
-.MEMORY::-webkit-scrollbar-button {
-    display: none;
-    width: 0;
-    height: 0;
 }
 .MEMORY::-webkit-scrollbar-corner {
     background-color: transparent;
 }
 
 .MEMORY::-webkit-scrollbar-thumb {
-    background-color: #4a4d52;
-    border: 0.8vw solid #282a2d;
+    background-color:  #313131;
+    border: 0.4vw solid  #525252;
     border-radius: 5px;
 } 
