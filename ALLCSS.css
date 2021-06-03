@@ -10,6 +10,37 @@ body
     background-color:#313131;
     /* color:white ; */
 }
+.input{
+    background: rgb(189, 189, 189);
+    color: #313131;
+    padding: 3px;
+    font-family: 'Electrolize', sans-serif;
+    margin-left: 10px;
+    border-radius: 2px;
+}
+.input:hover{
+    color: rgb(189, 189, 189);
+    background: #313131;
+    transition: 250ms;
+    cursor: pointer;
+}
+
+.input-grp{
+    margin-left: auto;
+    margin-top:auto;
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: row;
+}
+.header{
+    margin-left: 2rem;
+    font-weight: bolder;
+    letter-spacing: 0.6rem;
+    font-family: 'Source Code Pro', monospace;
+    color:#fffbdf;
+    margin-top: auto;
+    margin-bottom: auto;
+}
 
 .WHOLE
 {
@@ -124,8 +155,10 @@ body
     margin-top: 1vh;
     height: 4vh;
     width:  99%;
-    padding: 2px;
+    padding: 5px;
     border-radius: 5px;
+    display: flex;
+    justify-content: flex-start;
 }
 
 
